@@ -36,7 +36,8 @@ test("server-renders the Launchpad public shell", async () => {
   assert.match(html, /Company Nebula/);
   assert.match(html, /Link Gmail/);
   assert.match(html, /\+ Add company/);
-  assert.match(html, /US JOBS · ROLE FAMILY/);
+  assert.match(html, /JOB ROLE FAMILY · LIVE ROLES/);
+  assert.match(html, /COMPANY SECTOR · LIVE ROLES/);
   assert.match(html, /Coverage model/);
   assert.doesNotMatch(html, /Your site is taking shape|Building your site|react-loading-skeleton/i);
 });

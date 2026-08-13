@@ -423,7 +423,7 @@ export default function Home() {
   const internationalJobTotal = internationalJobs.length || feedSummary.internationalJobs || 0;
   const roleCounts = useMemo(() => scopedJobs.reduce((counts, job) => counts.set(job.category, (counts.get(job.category) || 0) + 1), new Map<string, number>()), [scopedJobs]);
   const sizeCounts = useMemo(() => scopedJobs.reduce((counts, job) => counts.set(job.companySize, (counts.get(job.companySize) || 0) + 1), new Map<string, number>()), [scopedJobs]);
-  const registrySectorCounts = useMemo(() => registry.reduce((counts, company) => counts.set(company.sector, (counts.get(company.sector) || 0) + 1), new Map<string, number>()), []);
+  const sectorCounts = useMemo(() => scopedJobs.reduce((counts, job) => counts.set(job.sector, (counts.get(job.sector) || 0) + 1), new Map<string, number>()), [scopedJobs]);
   const roleFamilies = ["All roles", ...Array.from(roleCounts.keys()).sort()];
   const specializationJobs = mode === "All roles" ? scopedJobs : scopedJobs.filter((job) => job.category === mode);
   const specializations = ["All specializations", ...Array.from(new Set(specializationJobs.map((job) => canonicalSpecialization(job, mode)))).sort((a, b) => {
@@ -433,7 +433,7 @@ export default function Home() {
   })];
   const specializationCount = (label: string) => label === "All specializations" ? specializationJobs.length : specializationJobs.filter((job) => canonicalSpecialization(job, mode) === label).length;
   const sources = ["All sources", ...Array.from(new Set(jobs.map((j) => j.source)))];
-  const sectors = ["All sectors", ...Array.from(new Set([...registry.map((c) => c.sector), ...jobs.map((job) => job.sector)])).sort()];
+  const sectors = ["All sectors", ...Array.from(sectorCounts.keys()).sort()];
   const sizes = ["All sizes", "Startup", "Small", "Medium", "Large", "Enterprise", "Unknown"];
   const appliedJobs = scopedJobs.filter((job) => applied[job.id]);
   const sizeCount = (label: string) => label === "All sizes" ? scopedJobs.length : sizeCounts.get(label) || 0;
@@ -549,12 +549,12 @@ export default function Home() {
 
       <section className="workspace">
         <aside>
-          <p className="label">US JOBS · ROLE FAMILY</p>
+          <p className="label">JOB ROLE FAMILY · LIVE ROLES</p>
           {roleFamilies.map((x) => <div key={x} className="roleFilterGroup"><button className={mode === x ? "filter active" : "filter"} onClick={() => toggleRoleFamily(x)}>{x}<span>{x === "All roles" ? scopedJobTotal : roleCounts.get(x) || 0}</span></button>{mode === x && x !== "All roles" && <div className="nestedFilters"><p className="label">{x.toUpperCase()} · SPECIALIZATION</p>{specializations.map((specializationLabel) => <button key={specializationLabel} className={specialization === specializationLabel ? "filter active subFilter" : "filter subFilter"} onClick={() => toggleSpecialization(specializationLabel)}>{specializationLabel}<span>{specializationCount(specializationLabel)}</span></button>)}</div>}</div>)}
           <p className="label space">COMPANY SIZE · LIVE ROLES</p>
           {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => toggleSize(x)}>{x}<span>{x === "All sizes" ? scopedJobTotal : sizeCount(x)}</span></button>)}
-          <p className="label space">SECTORS</p>
-          {sectors.map((x) => <button key={x} className={sector === x ? "filter active" : "filter"} onClick={() => toggleSector(x)}>{x}<span>{x === "All sectors" ? registry.length : registrySectorCounts.get(x) || 0}</span></button>)}
+          <p className="label space">COMPANY SECTOR · LIVE ROLES</p>
+          {sectors.map((x) => <button key={x} className={sector === x ? "filter active" : "filter"} onClick={() => toggleSector(x)}>{x}<span>{x === "All sectors" ? scopedJobTotal : sectorCounts.get(x) || 0}</span></button>)}
           <div className="fantastic"><div><span className="pulse"></span><b>Coverage model</b></div><p>This is a forkable local index, not a claim about the whole US market. Watchlist: {registrySummary.total} companies. Free feeds checked: {feedSummary.feedsChecked}. Resolved today: {feedSummary.boardsResolved}. US-visible hiring now: {feedSummary.usCompaniesWithMatches ?? scopedCompanyTotal}. Total resolved with international: {feedSummary.companiesWithMatches}.</p></div>
         </aside>
 
