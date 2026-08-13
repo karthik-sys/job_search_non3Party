@@ -26,6 +26,11 @@ export default function Home() {
   const [discovering, setDiscovering] = useState(false);
   const [discovery, setDiscovery] = useState<any>(null);
   const [discoveryError, setDiscoveryError] = useState("");
+  const [showTune, setShowTune] = useState(false);
+  const [resumeText, setResumeText] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [customPreference, setCustomPreference] = useState("");
+  const [preferences, setPreferences] = useState<string[]>([]);
 
   async function discoverCompany(e:FormEvent){
     e.preventDefault(); setDiscovering(true); setDiscovery(null); setDiscoveryError("");
@@ -34,6 +39,8 @@ export default function Home() {
   async function submitCompany(){
     if(!discovery)return; const r=await fetch("/api/companies",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({company:discovery.company,website:discovery.officialWebsite,careersUrl:discovery.careersUrl,provider:discovery.provider,slug:discovery.slug})}); const d=await r.json(); setDiscovery({...discovery,submitted:r.ok,error:d.error});
   }
+  async function analyzePreferences(e:FormEvent){e.preventDefault();const r=await fetch("/api/preferences",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({text:resumeText})});const d=await r.json();if(r.ok)setSuggestions(d.suggestions)}
+  function addPreference(label:string){setPreferences(p=>p.includes(label)?p:[...p,label])}
 
   const sources = ["All sources", ...Array.from(new Set(jobs.map((j) => j.source)))];
   const sectors = ["All sectors", ...Array.from(new Set(jobs.map((j) => j.sector))).sort()];
@@ -46,7 +53,6 @@ export default function Home() {
     return sort === "Company" ? [...result].sort((a,b) => a.company.localeCompare(b.company)) : result;
   }, [query, source, sector, remoteOnly, mode, sort]);
 
-  const aiCount = jobs.filter(j => j.category === "Applied AI").length;
   const companyGroups = useMemo(() => Array.from(new Set(filtered.map(j=>j.company))).map(company => {
     const companyJobs=filtered.filter(j=>j.company===company);
     return {company,jobs:companyJobs,sector:companyJobs[0].sector,source:companyJobs[0].source,software:companyJobs.filter(j=>j.category==="Software engineering").length,ai:companyJobs.filter(j=>j.category==="Applied AI").length,remote:companyJobs.filter(j=>j.remote).length};
@@ -71,7 +77,7 @@ export default function Home() {
         </div>
         <div className="stats">
           <div><strong>{jobs.length}</strong><span>open roles</span></div>
-          <div><strong>{aiCount}</strong><span>AI-focused</span></div>
+          <div><strong>{preferences.length||"—"}</strong><span>my interests</span></div>
           <div><strong>{new Set(jobs.map(j=>j.company)).size}</strong><span>hiring companies</span></div>
           <div><strong>100</strong><span>companies tracked</span></div>
         </div>
@@ -94,6 +100,7 @@ export default function Home() {
             <button role="tab" aria-selected={view==="companies"} className={view==="companies"?"active":""} onClick={()=>setView("companies")}><span>02</span> Browse by company</button>
             <button className="addInline" onClick={()=>setShowOnboard(true)}>+ Onboard company</button>
           </div>
+          <div className="personalizeBar"><div><span>Optional personalization</span><b>{preferences.length?preferences.join(" · "):"Browse neutrally, or tune the index to your interests."}</b></div><button onClick={()=>setShowTune(true)}>{preferences.length?"Edit interests":"Tune for me →"}</button></div>
           <div className="resultHead">
             <div><p className="label">OFFICIAL CAREERS RESULTS</p><h2>{view==="roles"?`${filtered.length} roles found`:`${companyGroups.length} companies hiring`}</h2></div>
             <div className="controls">
@@ -166,6 +173,7 @@ export default function Home() {
           </div>}
         </section>
       </div>}
+      {showTune&&<div className="drawerBackdrop" onClick={()=>setShowTune(false)}><section className="onboard" onClick={e=>e.stopPropagation()}><button className="close" onClick={()=>setShowTune(false)}>×</button><p className="eyebrow">OPTIONAL · USER CONTROLLED</p><h2>Tune the noise out.</h2><p>Paste résumé text for suggested interest areas. Nothing is stored, and every suggestion can be ignored or replaced with your own.</p><form onSubmit={analyzePreferences}><label>Résumé text<textarea value={resumeText} onChange={e=>setResumeText(e.target.value)} placeholder="Paste résumé text here…"/></label><button className="apply">Suggest interest areas</button></form>{suggestions.length>0&&<div className="suggestions"><p className="label">SUGGESTED — CHOOSE ANY</p>{suggestions.map(s=><button key={s.id} className={preferences.includes(s.label)?"chosen":""} onClick={()=>addPreference(s.label)}><b>{s.label}</b><span>{s.signals.join(" · ")}</span><em>{preferences.includes(s.label)?"Added":"+ Add"}</em></button>)}</div>}<div className="customPref"><input value={customPreference} onChange={e=>setCustomPreference(e.target.value)} placeholder="Create your own interest…"/><button onClick={()=>{if(customPreference.trim()){addPreference(customPreference.trim());setCustomPreference("")}}}>Add</button></div><small>Interests are preferences, not match scores. Résumé text is analyzed transiently and is not saved.</small></section></div>}
     </main>
   );
 }
