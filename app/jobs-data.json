@@ -1,47 +1,5 @@
 [
   {
-    "id": "Himalayas-https://himalayas.app/companies/yurts/jobs/technical-corporate-recruiter-national-defense-security-intelligence-communi",
-    "source": "Himalayas",
-    "title": "Technical Corporate Recruiter - National Defense, Security, Intelligence Communi",
-    "company": "name",
-    "location": "United States",
-    "remote": true,
-    "type": "Full Time",
-    "level": "Mid-level",
-    "date": "2026-08-13T13:58:16.000Z",
-    "salary": "USD 100000–150000/annual",
-    "tags": [
-      "Human Resources",
-      "Technical-Recruiting",
-      "Defense-Recruiting",
-      "Corporate-Recruiting",
-      "Security-Cleared-Recruiting"
-    ],
-    "url": "https://himalayas.app/companies/yurts/jobs/technical-corporate-recruiter-national-defense-security-intelligence-communi",
-    "summary": "About LegionLet’s be real, AI isn’t magic; Legion was built to move beyond AI hype—delivering secure, reliable systems that work alongside the people tackling the world’s most critical challenges."
-  },
-  {
-    "id": "Himalayas-https://himalayas.app/companies/trac-recruiting/jobs/saas-account-executive",
-    "source": "Himalayas",
-    "title": "SaaS Account Executive",
-    "company": "name",
-    "location": "United States",
-    "remote": true,
-    "type": "Full Time",
-    "level": "Mid-level",
-    "date": "2026-08-13T13:51:15.000Z",
-    "salary": "USD 80000–100000/annual",
-    "tags": [
-      "Sales",
-      "SaaS-Sales",
-      "Account-Executive",
-      "Enterprise-Sales",
-      "New-Business-Development"
-    ],
-    "url": "https://himalayas.app/companies/trac-recruiting/jobs/saas-account-executive",
-    "summary": "We are seeking a SaaS Account Executive (REMOTE) for full time and direct hire role with one of our amazing software partners."
-  },
-  {
     "id": "Jobicy-145861",
     "source": "Jobicy",
     "title": "Senior Full Stack Engineer",
@@ -56,110 +14,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/145861-senior-full-stack-engineer-5",
-    "summary": "Infisical is looking to hire exceptional talent to join our teams in building the open source security infrastructure stack for the AI era.We're building a generational company with a world-class team. This isn’t a place to coast — but if you want to grow fast, take ownership, and solve tough problems, you’ll be challe"
-  },
-  {
-    "id": "Jobicy-145920",
-    "source": "Jobicy",
-    "title": "Solution Engineer",
-    "company": "Sigma Computing",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Midweight",
-    "date": "2026-08-13T09:53:36+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/145920-solution-engineer",
-    "summary": "Sigma’s vision is to create an insight-driven world where people, organizations, and, ultimately, humanity are transformed for the better by data. At Sigma, we are building a cloud-native business intelligence platform that allows users to tap into their biggest databases hosted in the cloud and easily conduct ad hoc a"
-  },
-  {
-    "id": "Jobicy-145918",
-    "source": "Jobicy",
-    "title": "Partner Solution Architect - GSI",
-    "company": "Zscaler",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-13T09:53:33+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/145918-partner-solution-architect-gsi",
-    "summary": "About Zscaler Zscaler accelerates digital transformation to ensure our customers can be more agile, efficient, resilient, and secure. As an AI-forward enterprise, we are constantly pushing the envelope, leveraging the world’s largest security data lake to power our cloud-native Zero Trust Exchange platform. This innova"
-  },
-  {
-    "id": "Jobicy-149199",
-    "source": "Jobicy",
-    "title": "Customer Solutions Engineer – Payments",
-    "company": "Zuora",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Midweight",
-    "date": "2026-08-13T08:55:02+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/149199-customer-solutions-engineer-payments",
-    "summary": "About ZuoraAt Zuora, we help businesses grow smarter and adapt faster. Our platform powers modern business models — from subscriptions and usage-based pricing to AI-driven and outcome-based offerings — helping companies launch new products, automate complex billing, and unlock predictable, recurring revenue.We’ve led t"
-  },
-  {
-    "id": "Jobicy-149206",
-    "source": "Jobicy",
-    "title": "Customer Solution Engineer (Early Career)",
-    "company": "Ericsson",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-13T08:50:06+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/149206-customer-solution-engineer-early-career",
-    "summary": "Join our Team Ericsson Inc. does not sponsor U.S work authorizations for this job position including U.S. immigration filings for initial and/or change of employer paperwork for H-1's, H-1B1's, E-3's, O-1's, and TN's. Ericsson also does not hire F-1's working on CPT or EAD for this position. Relocation is not offered f"
-  },
-  {
-    "id": "Arbeitnow-director-business-development-united-states-or-the-european-union-58851",
-    "source": "Arbeitnow",
-    "title": "Director, Business Development",
-    "company": "Parsebiosciences",
-    "location": "United States, or, The European Union",
-    "remote": false,
-    "type": "",
-    "date": "2026-08-13T03:55:30.000Z",
-    "salary": "",
-    "tags": [
-      "Sales"
-    ],
-    "url": "https://www.arbeitnow.co.uk/jobs/companies/parsebiosciences/director-business-development-united-states-or-the-european-union-58851",
-    "summary": "p strong WHO WE ARE /strong /p p Parse Biosciences, a QIAGEN company, is a global life sciences company whose mission is to accelerate progress in human health and scientific research. Empowering researchers to perform single cell sequencing with unprecedented scale and ease, its pioneering approach has enabled groundb"
-  },
-  {
-    "id": "Remotive-2090989",
-    "source": "Remotive",
-    "title": "Assistant Account Payable",
-    "company": "The Obesity Society",
-    "location": "USA",
-    "remote": true,
-    "type": "full time",
-    "date": "2026-08-12T06:36:49",
-    "salary": "",
-    "tags": [
-      "accounting",
-      "excel",
-      "data entry",
-      "outlook"
-    ],
-    "url": "https://remotive.com/remote-jobs/medical/assistant-account-payable-2090989",
-    "summary": "This role may require you to be on site at times - please check with the employer first. The Accounts Payable Assistant performs accounting and c lerical tasks that are related to accounts payable transactions including receiving and logging invoices, maintaining and updating an accounts payable ledger, generating fina"
+    "summary": "Infisical is looking to hire exceptional talent to join our teams in building the open source security infrastructure stack for the AI era.We're building a generational company with a world-class team. This isn’t a place to coast — but if you want to grow fast, take ownership, and solve tough problems, you’ll be challe",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149109",
@@ -176,7 +32,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149109-software-engineer-unsecured-installments",
-    "summary": "About Upstart At Upstart, we’re united by a mission that matters: to radically reduce the cost and complexity of borrowing for all Americans. Every day, we bring creativity, experimentation, and advanced AI to reshape access to credit, helping millions move forward financially with clarity and confidence. As the leadin"
+    "summary": "About Upstart At Upstart, we’re united by a mission that matters: to radically reduce the cost and complexity of borrowing for all Americans. Every day, we bring creativity, experimentation, and advanced AI to reshape access to credit, helping millions move forward financially with clarity and confidence. As the leadin",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149108",
@@ -193,24 +50,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149108-senior-software-engineer-unsecured-installments",
-    "summary": "About Upstart At Upstart, we’re united by a mission that matters: to radically reduce the cost and complexity of borrowing for all Americans. Every day, we bring creativity, experimentation, and advanced AI to reshape access to credit, helping millions move forward financially with clarity and confidence. As the leadin"
-  },
-  {
-    "id": "Jobicy-149068",
-    "source": "Jobicy",
-    "title": "Senior Customer Solution Engineer — AI Native/Consumption Quote to Cash",
-    "company": "Zuora",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-10T04:20:05+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/149068-senior-customer-solution-engineer-ai-native-consumption-quote-to-cash",
-    "summary": "About ZuoraAt Zuora, we help businesses grow smarter and adapt faster. Our platform powers modern business models — from subscriptions and usage-based pricing to AI-driven and outcome-based offerings — helping companies launch new products, automate complex billing, and unlock predictable, recurring revenue.We’ve led t"
+    "summary": "About Upstart At Upstart, we’re united by a mission that matters: to radically reduce the cost and complexity of borrowing for all Americans. Every day, we bring creativity, experimentation, and advanced AI to reshape access to credit, helping millions move forward financially with clarity and confidence. As the leadin",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-150364",
@@ -227,7 +68,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/150364-software-engineer-python-container-images",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-150360",
@@ -244,7 +86,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/150360-open-source-networking-software-engineer-tor-switch-smartnic-dpu",
-    "summary": "Software has moved to play a central role in network technology. From outstanding routing implementations like Bird and FRR to overlay networking technology such as OVN/OVS and Cilium, from kernel with SwitchDev to userspace with DPDK, from P4 to OpenFlow, the relationship between network innovation and software contin"
+    "summary": "Software has moved to play a central role in network technology. From outstanding routing implementations like Bird and FRR to overlay networking technology such as OVN/OVS and Cilium, from kernel with SwitchDev to userspace with DPDK, from P4 to OpenFlow, the relationship between network innovation and software contin",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-145744",
@@ -261,24 +104,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/145744-frontend-engineer-react-and-aws",
-    "summary": "This is a remote position. Onsite/ Hybrid/ Remote: Remote (EST Work Hours) Duration: ​12 Months to start with Rate Range: Upto $80/hr W2 or $88/hr C2C Work Authorization: GC, USC, H1B All valid EADs except OPT, CPT Must Have: 5+ years of professional front-end software development experience Strong React and TypeScript"
-  },
-  {
-    "id": "Jobicy-145311",
-    "source": "Jobicy",
-    "title": "Staff Software Engineer- Growth Performance Marketing",
-    "company": "Pinterest",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-07T04:40:08+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/145311-staff-software-engineer-growth-performance-marketing",
-    "summary": "About Pinterest: Millions of people around the world come to our platform to find creative ideas, dream about new possibilities and plan for memories that will last a lifetime. At Pinterest, we’re on a mission to bring everyone the inspiration to create a life they love, and that starts with the people behind the produ"
+    "summary": "This is a remote position. Onsite/ Hybrid/ Remote: Remote (EST Work Hours) Duration: ​12 Months to start with Rate Range: Upto $80/hr W2 or $88/hr C2C Work Authorization: GC, USC, H1B All valid EADs except OPT, CPT Must Have: 5+ years of professional front-end software development experience Strong React and TypeScript",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-143125",
@@ -295,7 +122,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/143125-senior-machine-learning-engineer-genai-security",
-    "summary": "Reddit is a community of communities. It’s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 126 million daily a"
+    "summary": "Reddit is a community of communities. It’s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 126 million daily a",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-148702",
@@ -312,7 +140,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/148702-engineering-manager-linux-hardware-enablement",
-    "summary": "Lead an engineering team that partners with the Linux engineers of a major silicon company, and works across the full Linux stack from kernel to GUI, to optimise Ubuntu, the world’s most widely used Linux desktop and server, for the latest silicon.The role is a fast-paced, problem-solving role that’s challenging yet ve"
+    "summary": "Lead an engineering team that partners with the Linux engineers of a major silicon company, and works across the full Linux stack from kernel to GUI, to optimise Ubuntu, the world’s most widely used Linux desktop and server, for the latest silicon.The role is a fast-paced, problem-solving role that’s challenging yet ve",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-142519",
@@ -329,109 +158,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/142519-senior-data-scientist-3",
-    "summary": "At Counterpart Health, we are transforming healthcare and improving patient care with our innovative tool, Counterpart Assistant. By supporting Primary Care Physicians (PCPs), we are able to deliver improved outcomes to our patients at a lower cost through early diagnosis and longitudinal care management of chronic con"
-  },
-  {
-    "id": "Jobicy-148198",
-    "source": "Jobicy",
-    "title": "Director I, Data Science Product Management",
-    "company": "Liberty Mutual",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Director",
-    "date": "2026-08-05T07:05:07+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/148198-director-i-data-science-product-management",
-    "summary": "Description About the TeamThe Enterprise Data Data Science organization provides centralized product, platform, and technology support for Data Science teams across Liberty Mutual. Our team focuses on enabling the development, deployment, and adoption of AI/ML solutions through shared platforms, reusable capabilities, "
-  },
-  {
-    "id": "Jobicy-148333",
-    "source": "Jobicy",
-    "title": "Director I, Data Science, Enterprise Data & Data Science",
-    "company": "Liberty Mutual",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Director",
-    "date": "2026-08-05T06:25:07+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/148333-director-i-data-science-enterprise-data-data-science",
-    "summary": "Description We're seeking an exceptional, hands-on Data Scientist with deep expertise in data science, MLOps, and building GenAI solutions to join our Enterprise Data Data Science team. In this role, you'll identify, evaluate, and develop solutions at the intersection of data science, generative AI, and enterprise data"
-  },
-  {
-    "id": "Jobicy-148338",
-    "source": "Jobicy",
-    "title": "Senior Manager, IT Platform Engineering - FIXED TERM",
-    "company": "ŌURA",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-05T06:25:06+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/148338-senior-manager-it-platform-engineering-fixed-term",
-    "summary": "Our mission at Oura is to empower every person to own their inner potential. Our award-winning products help our global community gain a deeper knowledge of their readiness, activity, and sleep quality by using their Oura Ring and its connected app. We've helped millions of people understand and improve their health by"
-  },
-  {
-    "id": "Jobicy-148357",
-    "source": "Jobicy",
-    "title": "PRINCIPAL R&D/PRODUCT DVL ENGINEER",
-    "company": "TE Connectivity",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-05T06:20:07+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/148357-principal-rd-product-dvl-engineer",
-    "summary": "At TE, you will unleash your potential working with people from diverse backgrounds and industries to create a safer, sustainable and more connected world. Job Overview COMPANY TE Connectivity plc (NYSE: TEL) is a global industrial technology leader creating a safer, sustainable, productive, and connected future. Our b"
-  },
-  {
-    "id": "Jobicy-145309",
-    "source": "Jobicy",
-    "title": "Staff Cloud Security Engineer",
-    "company": "Temporal Technologies",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-05T05:30:06+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/145309-staff-cloud-security-engineer",
-    "summary": "About Us Temporal is an open source programming model that can simplify code, make applications more reliable, and help developers focus on the important things like delivering features faster. We are on a mission to be the reliable foundation of every developer’s toolbox, and are building the team that will make that "
-  },
-  {
-    "id": "Jobicy-145319",
-    "source": "Jobicy",
-    "title": "Senior AI Data Engineer",
-    "company": "Scorpion",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-05T05:25:07+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/145319-senior-ai-data-engineer",
-    "summary": "About Us Scorpion is the leading provider of technology and services helping local businesses thrive. We do this by helping customers understand local market dynamics, make the most of their marketing, and deliver experiences their customers will love. We offer tools to know what’s going on with marketing, competitors,"
+    "summary": "At Counterpart Health, we are transforming healthcare and improving patient care with our innovative tool, Counterpart Assistant. By supporting Primary Care Physicians (PCPs), we are able to deliver improved outcomes to our patients at a lower cost through early diagnosis and longitudinal care management of chronic con",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-145335",
@@ -448,24 +176,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/145335-engineering-manager-advanced-signals-swe",
-    "summary": "Reddit is a community of communities. It’s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 126 million daily a"
-  },
-  {
-    "id": "Jobicy-150161",
-    "source": "Jobicy",
-    "title": "Senior Accident Reconstruction Engineer",
-    "company": "J.S. Held",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-03T18:44:45+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/150161-senior-accident-reconstruction-engineer",
-    "summary": "Company DescriptionAre you looking to join an organization that is growing and dynamic? What about a high-energy, collaborative environment that rewards hard work?J.S. Held is a global consulting firm that combines technical, scientific, financial, and strategic expertise to advise clients seeking to realize value and "
+    "summary": "Reddit is a community of communities. It’s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 126 million daily a",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-150127",
@@ -482,7 +194,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/150127-senior-software-engineer-maas",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-148143",
@@ -499,7 +212,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/148143-senior-software-engineer-storage",
-    "summary": "Reddit is a community of communities. It’s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 126 million daily a"
+    "summary": "Reddit is a community of communities. It’s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 126 million daily a",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-148145",
@@ -516,24 +230,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/148145-senior-solutions-architect-ace",
-    "summary": "WHO WE ARE: Aviatrix® is pioneering the Cloud Native Security Fabric — the architecture the Containment Era requires. The Cloud Native Security Fabric governs every workload communication path across every cloud, every VPC, every Kubernetes cluster, and every serverless function, from a single policy plane. One rule. U"
-  },
-  {
-    "id": "Jobicy-150048",
-    "source": "Jobicy",
-    "title": "Principal Hardware Design Engineer - Computing Products",
-    "company": "RTX",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-08-01T03:22:20+00:00",
-    "salary": "",
-    "tags": [
-      "Software Engineering"
-    ],
-    "url": "https://jobicy.com/jobs/150048-principal-hardware-design-engineer-computing-products",
-    "summary": "Date Posted:2026-07-31 Country:United States of America Location:US-IA-REMOTE Position Role Type:Remote U.S. Citizen, U.S. Person, or Immigration Status Requirements: U.S. citizenship is required, as only U.S. citizens are authorized to access information under this program/contract. Security Clearance Type: None/Not R"
+    "summary": "WHO WE ARE: Aviatrix® is pioneering the Cloud Native Security Fabric — the architecture the Containment Era requires. The Cloud Native Security Fabric governs every workload communication path across every cloud, every VPC, every Kubernetes cluster, and every serverless function, from a single policy plane. One rule. U",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149985",
@@ -550,7 +248,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149985-engineering-manager-public-cloud-python-golang",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149981",
@@ -567,7 +266,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149981-software-architect-containers-virtualisation",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation and IoT. Our customers include the world's leadin"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation and IoT. Our customers include the world's leadin",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149980",
@@ -584,7 +284,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149980-engineering-manager-for-iam-identity-and-access-management",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149978",
@@ -601,7 +302,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149978-software-engineer-cloud-images",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149973",
@@ -618,7 +320,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149973-software-engineering-manager-container-and-virtualisation-infrastructure",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149972",
@@ -635,7 +338,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149972-software-engineer-ceph-distributed-storage",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149970",
@@ -652,7 +356,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149970-engineering-manager-ceph-distributed-storage",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-149969",
@@ -669,7 +374,8 @@
       "Software Engineering"
     ],
     "url": "https://jobicy.com/jobs/149969-linux-devices-software-engineer-snapd",
-    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi"
+    "summary": "Canonical is a leading provider of open source software and operating systems to the global enterprise and technology markets. Our platform, Ubuntu, is very widely used in breakthrough enterprise initiatives such as public cloud, data science, AI, engineering innovation, and IoT. Our customers include the world's leadi",
+    "category": "Software engineering"
   },
   {
     "id": "Jobicy-147988",
@@ -686,7 +392,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/147988-research-scientist-ii",
-    "summary": "Who We Are Pindrop is the Real Human + Right Human® Identity Trust Platform for the AI era. As AI-driven fraud and deepfakes erode trust in digital communication, Pindrop delivers continuous identity verification and deepfake detection across voice, video, and digital interactions in real time. Enterprises rely on Pind"
+    "summary": "Who We Are Pindrop is the Real Human + Right Human® Identity Trust Platform for the AI era. As AI-driven fraud and deepfakes erode trust in digital communication, Pindrop delivers continuous identity verification and deepfake detection across voice, video, and digital interactions in real time. Enterprises rely on Pind",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-144856",
@@ -703,24 +410,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/144856-senior-data-scientist-4",
-    "summary": "About Customer.ioOver 8,000 companies — from scrappy startups to global brands — use our platform to send billions of emails, push notifications, in-app messages, and SMS every day. Customer.io powers automated communication that people actually want to receive. We help teams send smarter, more relevant messages using "
-  },
-  {
-    "id": "Jobicy-147852",
-    "source": "Jobicy",
-    "title": "Principal Analyst, Data Integration",
-    "company": "H1",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-07-28T13:05:03+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/147852-principal-analyst-data-integration",
-    "summary": "At H1, we believe access to the best healthcare information is a basic human right. Our mission is to provide a platform that can optimally inform every doctor interaction globally. This promotes health equity and builds needed trust in healthcare systems. To accomplish this our teams harness the power of data and AI-t"
+    "summary": "About Customer.ioOver 8,000 companies — from scrappy startups to global brands — use our platform to send billions of emails, push notifications, in-app messages, and SMS every day. Customer.io powers automated communication that people actually want to receive. We help teams send smarter, more relevant messages using ",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-141971",
@@ -737,7 +428,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/141971-data-scientist-analytics-technical-leadership",
-    "summary": "We are seeking experienced Data Scientists to join our team and drive impact across various product areas. As a Data Scientist, you will collaborate with cross-functional partners to identify and solve complex problems using data and analysis. Your role will involve shaping product development, quantifying new opportun"
+    "summary": "We are seeking experienced Data Scientists to join our team and drive impact across various product areas. As a Data Scientist, you will collaborate with cross-functional partners to identify and solve complex problems using data and analysis. Your role will involve shaping product development, quantifying new opportun",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-143120",
@@ -754,42 +446,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/143120-senior-data-scientist-rc-capital",
-    "summary": "RevenueCat removes the headaches of building and scaling in‑app subscriptions. Since graduating from YC’s S18 batch we’ve grown into the default monetization platform for mobile: we’re in 40% of newly shipped subscription apps, we process $10B+ in annual purchase volume, and we help everyone from a solo dev in Brazil t"
-  },
-  {
-    "id": "Remotive-2090903",
-    "source": "Remotive",
-    "title": "Data Labeling Specialists",
-    "company": "Workada",
-    "location": "USA",
-    "remote": true,
-    "type": "freelance",
-    "date": "2026-07-26T20:49:11",
-    "salary": "$17/hr",
-    "tags": [
-      "research",
-      "digital content",
-      "spreadsheets"
-    ],
-    "url": "https://remotive.com/remote-jobs/data/data-labeling-specialists-2090903",
-    "summary": "Who We Are Workada creates high-quality labeled data for advanced technology systems. Our team reviews, organizes, categorizes, evaluates, and quality-checks digital content so those systems can better understand information and perform real-world tasks. We believe careful data work matters. Every reviewed item, catego"
-  },
-  {
-    "id": "Jobicy-143584",
-    "source": "Jobicy",
-    "title": "Power BI Architect",
-    "company": "Tiger Analytics",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-07-26T11:25:04+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/143584-power-bi-architect",
-    "summary": "Tiger Analytics is a fast-growing advanced analytics consulting firm. Our consultants bring deep expertise in Data Science, Machine Learning and AI. We are the trusted analytics partner for several Fortune 100 companies, enabling them to generate business value from data. Our business value and leadership has been reco"
+    "summary": "RevenueCat removes the headaches of building and scaling in‑app subscriptions. Since graduating from YC’s S18 batch we’ve grown into the default monetization platform for mobile: we’re in 40% of newly shipped subscription apps, we process $10B+ in annual purchase volume, and we help everyone from a solo dev in Brazil t",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-147495",
@@ -806,77 +464,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/147495-applied-data-scientist-machine-learning-engineer-decision-intelligence",
-    "summary": "We are looking for a product-minded Applied Data Scientist or Machine Learning Engineer to help build, ship, and scale ML-powered products that directly improve how our customers make decisions, operate their businesses, and serve their own users.This is not a research-only role, nor is it a service-oriented internal a"
-  },
-  {
-    "id": "Jobicy-147512",
-    "source": "Jobicy",
-    "title": "Ontology Architect",
-    "company": "Tiger Analytics",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Any",
-    "date": "2026-07-24T09:45:12+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/147512-ontology-architect",
-    "summary": "Tiger Analytics is an advanced analytics consulting firm. We are the trusted analytics partner for several Fortune 100 companies, enabling them to generate business value from data. Our consultants bring deep expertise in Data Science, Machine Learning, and AI. Our business value and leadership have been recognized by "
-  },
-  {
-    "id": "Jobicy-147548",
-    "source": "Jobicy",
-    "title": "Director I, Data Science, People, Purpose & Brand",
-    "company": "Liberty Mutual",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Director",
-    "date": "2026-07-24T09:35:07+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/147548-director-i-data-science-people-purpose-brand",
-    "summary": "Description The Data Science and Assessments (DS A) team within People, Purpose, Brand (PP B) is hiring a Director I, Data Scientist (STP) to serve as a hands-on technical leader for GenAI evaluation, enablement, and responsible AI adoption. PP B develops programs across talent acquisition, workforce planning, performa"
-  },
-  {
-    "id": "Remotive-2091074",
-    "source": "Remotive",
-    "title": "Content Reviewer - United States",
-    "company": "TELUS Digital",
-    "location": "USA",
-    "remote": true,
-    "type": "part time",
-    "date": "2026-07-23T15:37:35",
-    "salary": "$14/hr",
-    "tags": [
-      "android",
-      "ios",
-      "social media",
-      "AI/ML"
-    ],
-    "url": "https://remotive.com/remote-jobs/all-others/content-reviewer-united-states-2091074",
-    "summary": "We are looking for an independent, flexible, remote opportunity where you can help improve AI-powered search technology from the comfort of your home? If you're curious, internet-savvy, and enjoy evaluating online content, this freelance project could be a great fit. A Day in the Life of a Content Reviewer - US In this"
-  },
-  {
-    "id": "Jobicy-149598",
-    "source": "Jobicy",
-    "title": "Bioinformatics Manager (Oncology Product Development)",
-    "company": "Natera",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Midweight",
-    "date": "2026-07-22T04:43:57+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/149598-bioinformatics-manager-oncology-product-development",
-    "summary": "Natera is currently seeking a Bioinformatics Manager to join the Bioinformatics team focused on Oncology Product Development. In this role, the individual will manage a team of Bioinformaticians and Data Scientists and provide technical leadership in the design, development and validation of ctDNA-based diagnostic test"
+    "summary": "We are looking for a product-minded Applied Data Scientist or Machine Learning Engineer to help build, ship, and scale ML-powered products that directly improve how our customers make decisions, operate their businesses, and serve their own users.This is not a research-only role, nor is it a service-oriented internal a",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-149596",
@@ -893,41 +482,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/149596-senior-applied-scientist",
-    "summary": "Who we are Samsara (NYSE: IOT) is the pioneer of the Connected Operations™ Cloud, which is a platform that enables organizations that depend on physical operations to harness Internet of Things (IoT) data to develop actionable insights and improve their operations. At Samsara, we are helping improve the safety, efficie"
-  },
-  {
-    "id": "Jobicy-149463",
-    "source": "Jobicy",
-    "title": "Director, AI Commerce Analytics (USA Based Remote)",
-    "company": "NielsenIQ",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Director",
-    "date": "2026-07-20T17:11:13+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/149463-director-ai-commerce-analytics-usa-based-remote",
-    "summary": "Company DescriptionThe Director, Product, AI Commerce Analytics Data Strategy owns the AI and data strategy and the supporting architecture for NIQ's AI Commerce partnerships and AI-driven product operations. The role initiates the approaches, methodologies, and standards that other teams then execute and operate, and "
-  },
-  {
-    "id": "Jobicy-149452",
-    "source": "Jobicy",
-    "title": "Director, Data Analytics (Customer Experience / Member Growth & Retention)",
-    "company": "Molina Healthcare",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Director",
-    "date": "2026-07-20T14:39:54+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/149452-director-data-analytics-customer-experience-member-growth-retention",
-    "summary": "Job Summary As a member of the Customer Experience team, the Director, Data Analytics ensures timely creation of key Executive and Health plan management reports, as well as providing critical analytical insights. This role will assist in developing, implementing and monitoring the organization's enrollment, utilizatio"
+    "summary": "Who we are Samsara (NYSE: IOT) is the pioneer of the Connected Operations™ Cloud, which is a platform that enables organizations that depend on physical operations to harness Internet of Things (IoT) data to develop actionable insights and improve their operations. At Samsara, we are helping improve the safety, efficie",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-146556",
@@ -944,7 +500,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/146556-machine-learning-engineering-manager-ads-engagement-modeling",
-    "summary": "Reddit is a community of communities. It’s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 126 million daily a"
+    "summary": "Reddit is a community of communities. It’s built on shared interests, passion, and trust, and is home to the most open and authentic conversations on the internet. Every day, Reddit users submit, vote, and comment on the topics they care most about. With 100,000+ active communities and approximately 126 million daily a",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-149403",
@@ -961,7 +518,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/149403-lead-data-scientist",
-    "summary": "About UsFieldguide is establishing a new state of trust for global commerce and capital markets by automating and streamlining the work of assurance and audit practitioners, specifically in cybersecurity, privacy, and financial audits. Put simply, we build software for the people who enable trust between businesses.We’"
+    "summary": "About UsFieldguide is establishing a new state of trust for global commerce and capital markets by automating and streamlining the work of assurance and audit practitioners, specifically in cybersecurity, privacy, and financial audits. Put simply, we build software for the people who enable trust between businesses.We’",
+    "category": "Applied AI"
   },
   {
     "id": "Jobicy-149399",
@@ -978,24 +536,8 @@
       "Data Science &amp; Analytics"
     ],
     "url": "https://jobicy.com/jobs/149399-senior-data-scientist-innovation-lab",
-    "summary": "Company DescriptionExperian is a global data and technology company, powering opportunities for people and businesses around the world. We operate across a range of markets, from financial services to healthcare, automotive, agribusiness, insurance, and many more. Experian invests in people and new advanced technologie"
-  },
-  {
-    "id": "Jobicy-146434",
-    "source": "Jobicy",
-    "title": "AI Vendor Market Expert (Senior Director, Analyst – Fully Remote United States)",
-    "company": "Gartner",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Senior",
-    "date": "2026-07-15T19:05:05+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/146434-ai-vendor-market-expert-senior-director-analyst-fully-remote-united-states",
-    "summary": "About the role: Gartner Analysts are industry thought leaders who create must-have insights, market predictions and best practices for a broad range of world-leading organizations. In a fast-changing vendor landscape, our premium branded market coverage research, such as our Magic Quadrants, serve as lighthouses that a"
+    "summary": "Company DescriptionExperian is a global data and technology company, powering opportunities for people and businesses around the world. We operate across a range of markets, from financial services to healthcare, automotive, agribusiness, insurance, and many more. Experian invests in people and new advanced technologie",
+    "category": "Applied AI"
   },
   {
     "id": "Remotive-2069746",
@@ -1034,23 +576,7 @@
       "system architecture"
     ],
     "url": "https://remotive.com/remote-jobs/software-development/tech-lead-full-stack-rails-engineer-2069746",
-    "summary": "About Mitre Media Mitre Media is redefining FinTech with AI-driven tools that empower millions of investors. Our portfolio, including Dividend.com and MutualFunds.com, leverages LLMs to deliver novel data insights and visually rich user experiences. For over a decade, we’ve served individual investors, financial adviso"
-  },
-  {
-    "id": "Jobicy-146432",
-    "source": "Jobicy",
-    "title": "IT Software Asset Management Analyst",
-    "company": "DoorDash",
-    "location": "USA",
-    "remote": true,
-    "type": "Full-Time",
-    "level": "Midweight",
-    "date": "2026-07-14T11:05:07+00:00",
-    "salary": "",
-    "tags": [
-      "Data Science &amp; Analytics"
-    ],
-    "url": "https://jobicy.com/jobs/146432-it-software-asset-management-analyst",
-    "summary": "About the TeamAt DoorDash, our mission is to empower local economies by providing innovative technology solutions that make it easier for customers, merchants, and Dashers to connect. We are seeking a Senior Software Asset Manager to join our Global IT team and help drive our software asset management (SAM) initiatives"
+    "summary": "About Mitre Media Mitre Media is redefining FinTech with AI-driven tools that empower millions of investors. Our portfolio, including Dividend.com and MutualFunds.com, leverages LLMs to deliver novel data insights and visually rich user experiences. For over a decade, we’ve served individual investors, financial adviso",
+    "category": "Software engineering"
   }
 ]

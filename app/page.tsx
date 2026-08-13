@@ -22,15 +22,14 @@ export default function Home() {
   const sources = ["All sources", ...Array.from(new Set(jobs.map((j) => j.source)))];
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const ai = /\b(ai|ml|llm|machine learning|applied scientist|data scientist|research scientist|computer vision|nlp)\b/i;
     const result = jobs.filter((j) => {
       const haystack = `${j.title} ${j.company} ${j.location} ${j.tags.join(" ")} ${j.summary}`.toLowerCase();
-      return (!q || haystack.includes(q)) && (source === "All sources" || j.source === source) && (!remoteOnly || j.remote) && (mode === "All roles" || (mode === "Applied AI" ? ai.test(haystack) : !ai.test(j.title)));
+      return (!q || haystack.includes(q)) && (source === "All sources" || j.source === source) && (!remoteOnly || j.remote) && (mode === "All roles" || j.category === mode);
     });
     return sort === "Company" ? [...result].sort((a,b) => a.company.localeCompare(b.company)) : result;
   }, [query, source, remoteOnly, mode, sort]);
 
-  const aiCount = jobs.filter(j => /\b(ai|ml|llm|machine learning|applied scientist|data scientist|research scientist|computer vision|nlp)\b/i.test(`${j.title} ${j.tags.join(" ")}`)).length;
+  const aiCount = jobs.filter(j => j.category === "Applied AI").length;
   const remoteCount = jobs.filter(j => j.remote).length;
 
   return (
@@ -88,9 +87,9 @@ export default function Home() {
                   <div className="jobTop"><h3>{job.title}</h3><span>{fmtDate(job.date)}</span></div>
                   <p className="company">{job.company} <i>·</i> {job.location}</p>
                   <p className="summary">{job.summary}</p>
-                  <div className="chips"><span className="source">{job.source}</span>{job.remote&&<span>Remote</span>}{job.level&&<span>{job.level}</span>}{job.type&&<span>{job.type}</span>}{job.tags.slice(0,3).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
+                  <div className="chips"><span className="category">{job.category}</span><span className="source">{job.source}</span>{job.remote&&<span>Remote</span>}{job.level&&<span>{job.level}</span>}{job.type&&<span>{job.type}</span>}{job.tags.slice(0,2).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
                 </div>
-                <button aria-label={`View ${job.title}`}>↗</button>
+                <a className="quickApply" aria-label={`Open application for ${job.title}`} href={job.url} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()}>Apply ↗</a>
               </article>
             ))}
           </div>
@@ -102,7 +101,7 @@ export default function Home() {
       {selected && <div className="drawerBackdrop" onClick={()=>setSelected(null)}>
         <aside className="drawer" onClick={e=>e.stopPropagation()}>
           <button className="close" onClick={()=>setSelected(null)}>×</button>
-          <span className="source">{selected.source}</span>
+          <span className="category">{selected.category}</span> <span className="source">{selected.source}</span>
           <h2>{selected.title}</h2>
           <h3>{selected.company}</h3>
           <div className="drawerMeta"><span>⌖ {selected.location}</span><span>{selected.remote?"Remote":"On-site / hybrid"}</span><span>{fmtDate(selected.date)}</span></div>
