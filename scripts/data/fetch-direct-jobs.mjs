@@ -76,6 +76,19 @@ const summarize = (content) => {
   const sentence = content.match(/^.{80,360}?[.!?](?:\s|$)/)?.[0];
   return (sentence || content.slice(0, 320)).trim();
 };
+const slugify = (value = "") => String(value)
+  .toLowerCase()
+  .normalize("NFKD")
+  .replace(/[\u0300-\u036f]/g, "")
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/^-+|-+$/g, "");
+const humanPostingUrl = (row, job, title) => {
+  const direct = job.absolute_url || job.hostedUrl || job.jobUrl || job.applyUrl;
+  if (direct && !/api\.smartrecruiters\.com/i.test(direct)) return direct;
+  if (row.ats === "smartrecruiters" && job.id) return `https://jobs.smartrecruiters.com/${row.slug}/${job.id}-${slugify(title)}`;
+  if (job.ref && !/api\.smartrecruiters\.com/i.test(job.ref)) return job.ref;
+  return direct || job.ref || "";
+};
 const requirements = (title, content, category, sector) => {
   const text = `${title} ${content}`;
   const tags = [category, sector];
@@ -137,7 +150,8 @@ async function fetchBoard(row){
       const isUs = us.test(location) || (remote && /us|united states|us-hiring-signal|verified-seed/i.test(`${row.confidence} ${location}`));
       if (!ALL_MARKETS && !isUs) return [];
       const providerLabel = row.ats === 'greenhouse' ? 'Greenhouse' : row.ats === 'lever' ? 'Lever' : row.ats === 'ashby' ? 'Ashby' : 'SmartRecruiters';
-      return [{id:`${row.ats}-${row.slug}-${j.id || j.uuid || j.ref || j.jobUrl || j.hostedUrl}`,source:`Direct ${providerLabel}`,company:row.company,companySize:companySize(row.company,row.size),sector:inferredSector,title,category,location:typeof location==='string'&&location?location:(isUs?'United States / Remote':'Remote / Global'),remote,isUs,type:j.categories?.commitment || '',level:'',date,salary:'',tags:requirements(title,content,category,inferredSector),url:j.absolute_url || j.jobUrl || j.applyUrl || j.hostedUrl || j.ref,summary:summarize(content),companyEvidence:`Audited official feed: ${providerLabel} board ${row.slug}. Posting kept only when returned by the provider API with a source URL.`}];
+      const postingUrl = humanPostingUrl(row, j, title);
+      return [{id:`${row.ats}-${row.slug}-${j.id || j.uuid || j.ref || j.jobUrl || j.hostedUrl}`,source:`Direct ${providerLabel}`,company:row.company,companySize:companySize(row.company,row.size),sector:inferredSector,title,category,location:typeof location==='string'&&location?location:(isUs?'United States / Remote':'Remote / Global'),remote,isUs,type:j.categories?.commitment || '',level:'',date,salary:'',tags:requirements(title,content,category,inferredSector),url:postingUrl,summary:summarize(content),companyEvidence:`Verified official posting: returned by the ${providerLabel} careers feed for ${row.slug} with a user-openable source link.`}];
     });
     return {...row,status:200,total:raw.length,jobs};
   } catch (e) { return {...row,status:'error',jobs:[]}; }
@@ -149,8 +163,7 @@ for(let i=0;i<rows.length;i+=24) {
   if ((i / 24) % 10 === 0) console.error(`checked ${Math.min(i+24,rows.length)} / ${rows.length} official feeds`);
 }
 const jobs=results.flatMap(r=>r.jobs).filter(j=>j.url);
-const canonical = (value='') => String(value).toLowerCase().replace(/^https?:\/\/(www\.)?/,'').replace(/[?#].*$/,'').replace(/\/$/,'').trim();
-const seen=new Set(); const unique=jobs.filter(j=>{const keyUrl=canonical(j.url);const keyTitle=`${j.company}|${j.title}|${j.location}`.toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();const k=keyUrl || keyTitle;if(seen.has(k))return false;seen.add(k);return true;}).sort((a,b)=>new Date(b.date)-new Date(a.date));
+const seenProviderIds=new Set(); const unique=jobs.filter(j=>{const key=`${j.source || ''}:${j.id || ''}`.toLowerCase().trim();if(key!==':'&&seenProviderIds.has(key))return false;if(key!==':')seenProviderIds.add(key);return true;}).sort((a,b)=>new Date(b.date)-new Date(a.date));
 const summary = {feedsChecked:rows.length,boardsResolved:results.filter(r=>r.status===200).length,companiesWithMatches:new Set(unique.map(j=>j.company)).size,jobs:unique.length,sizes:Object.fromEntries([...new Set(unique.map(j=>j.companySize))].map(s=>[s,unique.filter(j=>j.companySize===s).length])),sectors:Object.fromEntries([...new Set(unique.map(j=>j.sector))].map(s=>[s,unique.filter(j=>j.sector===s).length]))};
 if (!unique.length) {
   fs.writeFileSync('app/company-coverage.failed.json',JSON.stringify(results.map(({jobs,...r})=>({...r,matchingJobs:jobs.length})),null,2));

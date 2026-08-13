@@ -13,6 +13,7 @@
     "data:registry": "node scripts/data/build-company-registry.mjs",
     "data:fetch": "node scripts/data/fetch-direct-jobs.mjs",
     "data:fetch:global": "node scripts/data/fetch-direct-jobs.mjs --include-international",
+    "data:pack": "node scripts/pack-job-snapshot.mjs",
     "data:repair": "node scripts/repair-job-snapshot.mjs",
     "data:audit": "node scripts/audit-job-snapshot.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",

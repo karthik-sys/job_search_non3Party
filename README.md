@@ -66,6 +66,14 @@ Fetch a broader international snapshot:
 npm run data:fetch:global
 ```
 
+Pack and validate a refreshed snapshot:
+
+```bash
+npm run data:pack
+npm run data:repair
+npm run data:audit
+```
+
 ## Data model
 
 The checked-in source includes a compressed public job snapshot under `public/job-snapshot/`, so a fresh clone can run the same dashboard dataset locally without paid APIs or a crawler step. The app first checks `public/jobs-data.json`; when that file is empty, it loads and decompresses the chunked snapshot.

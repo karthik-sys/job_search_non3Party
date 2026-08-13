@@ -9,6 +9,7 @@ const jobs = JSON.parse(zlib.gunzipSync(compressed));
 
 const usLocation = /United States|\bUS\b|\bUSA\b|Remote\b|Remote.*U\.?S|California|New York|Texas|Washington|Massachusetts|Virginia|Colorado|Illinois|Georgia|Florida|Maryland|Pennsylvania|Oregon|Arizona|North Carolina|District of Columbia|San Francisco|Seattle|Boston|Austin|Chicago|Atlanta|Denver|Dallas|Houston|Phoenix|Philadelphia|Pittsburgh|Raleigh|Charlotte|Portland|Nashville|San Diego|San Jose|Los Angeles|Newark|Wilmington|Fremont|Boulder|Cambridge|Palo Alto|Santa Clara|Mountain View|Menlo Park|Redwood City|San Mateo|Miami|Tampa|Orlando|Detroit|Minneapolis|Salt Lake City|Provo|Las Vegas|Arlington|McLean|Reston|\b(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|IA|ID|IL|IN|KS|KY|LA|MA|MD|ME|MI|MN|MO|MS|MT|NC|ND|NE|NH|NJ|NM|NV|NY|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VA|VT|WA|WI|WV|WY|DC)\b/i;
 const htmlLeak = /<\/?[a-z][^>]*>|\\u003c|\b(?:div|span|p|section)\s+class\s*=|&lt;|&gt;/i;
+const apiOnlyUrl = /api\.smartrecruiters\.com|boards-api\.greenhouse\.io/i;
 
 function canonicalUrl(value = "") {
   try {
@@ -35,6 +36,7 @@ for (const job of jobs) {
   const fingerprint = `${job.company || ""}|${job.title || ""}|${job.location || ""}`.toLowerCase().replace(/\s+/g, " ").trim();
   if (!job.company || !job.title || !job.location || !url) issues.push({ id: job.id, issue: "missing required display/source field" });
   if (url && !/^https?:\/\//i.test(url)) issues.push({ id: job.id, issue: "invalid source url", url });
+  if (apiOnlyUrl.test(url)) issues.push({ id: job.id, issue: "source url is API-only, not a human job posting", url });
   if (!job.companyEvidence) issues.push({ id: job.id, issue: "missing audit evidence" });
   if (htmlLeak.test(`${job.title || ""} ${job.summary || ""} ${job.companyEvidence || ""} ${(job.tags || []).join(" ")}`)) issues.push({ id: job.id, issue: "html leaked into display text" });
   if (job.isUs !== false && !usLocation.test(String(job.location || "")) && geographyWarnings.length < 50) geographyWarnings.push({ id: job.id, issue: "US-default row has weak US location signal", location: job.location });
@@ -75,7 +77,7 @@ console.log(JSON.stringify(report, null, 2));
 
 if (
   duplicateProviderIds.length ||
-  issues.some((issue) => issue.issue === "missing required display/source field" || issue.issue === "html leaked into display text")
+  issues.length
 ) {
   process.exitCode = 1;
 }
