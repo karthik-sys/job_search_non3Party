@@ -41,9 +41,9 @@ export default function Home() {
       </header>
 
       <section className="hero" id="top">
-        <div className="eyebrow">United States engineering opportunity index</div>
+        <div className="eyebrow">US-headquartered company opportunity index</div>
         <h1>Your next role,<br/><em>without the noise.</em></h1>
-        <p>Thirty days of software engineering and applied AI openings explicitly based in—or open to candidates in—the United States, audited and deduplicated across independent job APIs.</p>
+        <p>Thirty days of software engineering and applied AI openings at verified US-headquartered companies, with explicit US candidate eligibility.</p>
         <div className="searchBox">
           <span className="searchIcon">⌕</span>
           <input aria-label="Search jobs" value={query} onChange={e => {setQuery(e.target.value); setVisible(30)}} placeholder="Search titles, skills, companies, locations…" />
@@ -53,7 +53,7 @@ export default function Home() {
           <div><strong>{jobs.length}</strong><span>open roles</span></div>
           <div><strong>{aiCount}</strong><span>AI-focused</span></div>
           <div><strong>{remoteCount}</strong><span>remote</span></div>
-          <div><strong>30</strong><span>days covered</span></div>
+          <div><strong>{new Set(jobs.map(j=>j.company)).size}</strong><span>US companies</span></div>
         </div>
       </section>
 
@@ -87,7 +87,7 @@ export default function Home() {
                   <div className="jobTop"><h3>{job.title}</h3><span>{fmtDate(job.date)}</span></div>
                   <p className="company">{job.company} <i>·</i> {job.location}</p>
                   <p className="summary">{job.summary}</p>
-                  <div className="chips"><span className="category">{job.category}</span><span className="source">{job.source}</span>{job.remote&&<span>Remote</span>}{job.level&&<span>{job.level}</span>}{job.type&&<span>{job.type}</span>}{job.tags.slice(0,2).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
+                  <div className="chips"><span className="category">{job.category}</span><span className="hq">US HQ verified</span><span className="source">{job.source}</span>{job.remote&&<span>Remote</span>}{job.level&&<span>{job.level}</span>}{job.type&&<span>{job.type}</span>}{job.tags.slice(0,2).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
                 </div>
                 <a className="quickApply" aria-label={`Open application for ${job.title}`} href={job.url} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()}>Apply ↗</a>
               </article>
@@ -105,6 +105,7 @@ export default function Home() {
           <h2>{selected.title}</h2>
           <h3>{selected.company}</h3>
           <div className="drawerMeta"><span>⌖ {selected.location}</span><span>{selected.remote?"Remote":"On-site / hybrid"}</span><span>{fmtDate(selected.date)}</span></div>
+          <p className="hqEvidence"><b>US headquarters evidence:</b> {selected.companyEvidence}</p>
           <p>{selected.summary}</p>
           <div className="chips">{selected.tags.slice(0,8).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
           {selected.salary && <p className="salary">Listed compensation: <b>{selected.salary}</b></p>}
