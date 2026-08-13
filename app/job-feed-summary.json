@@ -1,27 +1,34 @@
 {
   "feedsChecked": 1115,
   "boardsResolved": 798,
-  "companiesWithMatches": 604,
-  "jobs": 36336,
+  "companiesWithMatches": 590,
+  "jobs": 25208,
+  "usJobs": 23404,
+  "internationalJobs": 1804,
   "sizes": {
-    "Large": 10578,
-    "Medium": 17674,
-    "Unknown": 6957,
-    "Enterprise": 1052,
-    "Startup": 75
+    "Enterprise": 1050,
+    "Large": 6450,
+    "Medium": 12133,
+    "Startup": 75,
+    "Unknown": 5500
   },
   "sectors": {
-    "Consumer Technology": 1498,
-    "Defense & Aerospace": 3657,
-    "Automotive & Robotics": 845,
-    "AI & Developer Tools": 1608,
-    "Gaming & Interactive": 8642,
-    "Other US Companies": 14808,
-    "Climate & Infrastructure": 520,
-    "Fintech": 1261,
-    "Enterprise Software & Cloud": 926,
-    "Cybersecurity": 496,
-    "Retail & Commerce": 1493,
-    "Healthcare & Biotech": 582
+    "AI & Developer Tools": 1445,
+    "Automotive & Robotics": 555,
+    "Climate & Infrastructure": 366,
+    "Consumer Technology": 1021,
+    "Cybersecurity": 426,
+    "Defense & Aerospace": 904,
+    "Enterprise Software & Cloud": 911,
+    "Fintech": 1259,
+    "Gaming & Interactive": 4784,
+    "Healthcare & Biotech": 339,
+    "Other US Companies": 11708,
+    "Retail & Commerce": 1490
+  },
+  "sources": {
+    "Direct Ashby": 2845,
+    "Direct Greenhouse": 20686,
+    "Direct Lever": 1677
   }
 }

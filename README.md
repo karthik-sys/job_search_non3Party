@@ -1,14 +1,16 @@
 # Launchpad Careers
 
-Launchpad is a company-first US job dashboard. It indexes official company careers feeds, lets users search roles and hiring companies, and sends applicants to the original company-controlled application page.
+Launchpad is a local-first, company-first job dashboard. It indexes official company careers feeds, lets users search roles and hiring companies, and sends applicants to the original company-controlled application page.
 
-The product goal is simple: your next role, without the noisy third-party reposting layer.
+The product goal is simple: your next role, without the noisy third-party reposting layer. This is meant to be forked, remixed, and run locally — not to become another consolidated hiring network.
 
 ## What it does
 
 - Tracks a broad US company watchlist and resolves supported official ATS feeds.
-- Ingests live roles from Greenhouse, Ashby, and Lever without paid job-board APIs.
+- Ingests live roles from Greenhouse, Ashby, Lever, and SmartRecruiters without paid job-board APIs.
+- Keeps a visible separation between companies tracked, feeds resolved, and verified open roles.
 - Searches across all kinds of US roles, not only software or AI.
+- Defaults to US/US-eligible roles, with an optional international expansion path.
 - Groups opportunities by role family, company, sector, company size, and applied status.
 - Adds job and company contribution tags from official posting/careers text.
 - Includes a Company Nebula market map for exploring sectors and hiring density.
@@ -40,6 +42,30 @@ Run validation:
 npm test
 ```
 
+Audit the bundled job snapshot:
+
+```bash
+npm run data:audit
+```
+
+Regenerate the sector-first company registry:
+
+```bash
+npm run data:registry
+```
+
+Fetch a fresh US-only official-feed snapshot:
+
+```bash
+npm run data:fetch
+```
+
+Fetch a broader international snapshot:
+
+```bash
+npm run data:fetch:global
+```
+
 ## Data model
 
 The checked-in source includes a compressed public job snapshot under `public/job-snapshot/`, so a fresh clone can run the same dashboard dataset locally without paid APIs or a crawler step. The app first checks `public/jobs-data.json`; when that file is empty, it loads and decompresses the chunked snapshot.
@@ -50,18 +76,43 @@ Important files:
 - `app/api/discover/route.ts` — public company-site inspection and ATS discovery.
 - `app/api/preferences/route.ts` — transient résumé-to-interest suggestions.
 - `app/api/companies/route.ts` — moderation-queue submission endpoint.
+- `app/sector-starter-companies.json` — curated starter pack for broad US sectors beyond tech.
 - `app/company-registry-preview.json` — public company watchlist preview.
-- `public/job-snapshot/` — compressed Greenhouse, Ashby, and Lever direct-ATS role snapshot used by local/dev builds.
+- `public/job-snapshot/` — compressed direct-ATS role snapshot used by local/dev builds.
 - `app/job-feed-summary.json` — dashboard counts for the checked-in snapshot.
+- `scripts/audit-job-snapshot.mjs` — local audit report for duplicates, source URLs, provider counts, geography split, and raw HTML leaks.
 - `drizzle/0001_company_submissions.sql` — Cloudflare D1 submission schema.
 
 ## Supported careers systems
 
-- Greenhouse
-- Ashby
-- Lever
+- Greenhouse public board APIs
+- Ashby public job-board APIs
+- Lever public postings APIs
+- SmartRecruiters public company postings APIs
 
-Provider adapters intentionally return a transparent unsupported result for custom career systems. Contributions for Workday, SmartRecruiters, iCIMS, Workable, and company-specific adapters are welcome.
+Provider adapters intentionally return a transparent unsupported result for custom career systems. Contributions for Workday, iCIMS, Workable, Breezy, schema.org JobPosting extraction, and company-specific adapters are welcome.
+
+## How Launchpad avoids fabricated postings
+
+The crawler should only promote a row to “open role” after it passes all of these gates:
+
+1. The company appears in a local registry or is explicitly onboarded by the user.
+2. The company website or careers page links to a recognized company-controlled careers system.
+3. The provider adapter returns structured data with a title, location, stable id/source URL, and application URL.
+4. The location is US/US-eligible by default, unless the user enables international roles.
+5. Display text is cleaned of HTML and script/style content.
+6. Duplicate rows are removed by provider-native job ID first. Canonical apply URL and company/title/location fingerprints are reported as audit signals because some companies reuse one apply URL for multiple legitimate roles.
+7. The UI keeps the original listing link visible so users can verify before applying.
+
+Anything that fails those checks should remain “tracked company / unresolved feed,” not a job posting.
+
+Run the audit locally:
+
+```bash
+npm run data:audit
+```
+
+The audit fails if it finds duplicate provider IDs, missing source URLs/evidence, or visible raw HTML in display fields. Reused apply URLs and repeated company/title/location fingerprints are reported as review signals instead of hard failures.
 
 ## Gmail-aware tracking
 

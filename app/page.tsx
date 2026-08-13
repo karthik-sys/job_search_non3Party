@@ -23,6 +23,7 @@ type Job = {
   url: string;
   summary: string;
   companyEvidence: string;
+  isUs?: boolean;
   searchIndex?: {
     title: string;
     category: string;
@@ -209,6 +210,7 @@ const roleSpecialization = (job: Job) => {
 };
 
 export default function Home() {
+  const [searchDraft, setSearchDraft] = useState("");
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -218,12 +220,13 @@ export default function Home() {
   const [mode, setMode] = useState("All roles");
   const [specialization, setSpecialization] = useState("All specializations");
   const [remoteOnly, setRemoteOnly] = useState(false);
+  const [includeInternational, setIncludeInternational] = useState(false);
   const [interestOnly, setInterestOnly] = useState(false);
   const [sort, setSort] = useState("Newest");
   const [companyFocus, setCompanyFocus] = useState("");
   const [selected, setSelected] = useState<Job | null>(null);
   const [visible, setVisible] = useState(30);
-  const [view, setView] = useState<"roles" | "companies" | "universe" | "applied">("roles");
+  const [view, setView] = useState<"roles" | "companies" | "universe" | "applied" | "audit">("roles");
   const [showOnboard, setShowOnboard] = useState(false);
   const [showGmail, setShowGmail] = useState(false);
   const [showNebula, setShowNebula] = useState(false);
@@ -276,6 +279,14 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("launchpad-applied", JSON.stringify(applied));
   }, [applied]);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => {
+      setQuery(searchDraft);
+      setVisible(30);
+    }, 220);
+    return () => window.clearTimeout(handle);
+  }, [searchDraft]);
 
   useEffect(() => {
     setSpecialization("All specializations");
@@ -365,8 +376,34 @@ export default function Home() {
     setGmailScanned(false);
   }
 
-  const roleFamilies = ["All roles", ...Array.from(new Set(jobs.map((j) => j.category))).sort()];
-  const specializationJobs = mode === "All roles" ? jobs : jobs.filter((job) => job.category === mode);
+  function toggleRoleFamily(label: string) {
+    setMode((current) => (current === label ? "All roles" : label));
+    setVisible(30);
+  }
+
+  function toggleSpecialization(label: string) {
+    setSpecialization((current) => (current === label ? "All specializations" : label));
+    setVisible(30);
+  }
+
+  function toggleSize(label: string) {
+    setSize((current) => (current === label ? "All sizes" : label));
+    setVisible(30);
+  }
+
+  function toggleSector(label: string) {
+    setSector((current) => (current === label ? "All sectors" : label));
+    setVisible(30);
+  }
+
+  const scopedJobs = useMemo(() => includeInternational ? jobs : jobs.filter((job) => job.isUs !== false), [jobs, includeInternational]);
+  const usJobs = useMemo(() => jobs.filter((job) => job.isUs !== false), [jobs]);
+  const internationalJobs = useMemo(() => jobs.filter((job) => job.isUs === false), [jobs]);
+  const roleCounts = useMemo(() => scopedJobs.reduce((counts, job) => counts.set(job.category, (counts.get(job.category) || 0) + 1), new Map<string, number>()), [scopedJobs]);
+  const sizeCounts = useMemo(() => scopedJobs.reduce((counts, job) => counts.set(job.companySize, (counts.get(job.companySize) || 0) + 1), new Map<string, number>()), [scopedJobs]);
+  const registrySectorCounts = useMemo(() => registry.reduce((counts, company) => counts.set(company.sector, (counts.get(company.sector) || 0) + 1), new Map<string, number>()), []);
+  const roleFamilies = ["All roles", ...Array.from(roleCounts.keys()).sort()];
+  const specializationJobs = mode === "All roles" ? scopedJobs : scopedJobs.filter((job) => job.category === mode);
   const specializations = ["All specializations", ...Array.from(new Set(specializationJobs.map(roleSpecialization))).sort((a, b) => {
     if (a === "General / Other") return 1;
     if (b === "General / Other") return -1;
@@ -376,9 +413,9 @@ export default function Home() {
   const sources = ["All sources", ...Array.from(new Set(jobs.map((j) => j.source)))];
   const sectors = ["All sectors", ...Array.from(new Set([...registry.map((c) => c.sector), ...jobs.map((job) => job.sector)])).sort()];
   const sizes = ["All sizes", "Startup", "Small", "Medium", "Large", "Enterprise", "Unknown"];
-  const appliedJobs = jobs.filter((job) => applied[job.id]);
-  const sizeCount = (label: string) => label === "All sizes" ? jobs.length : jobs.filter((job) => job.companySize === label).length;
-  const discoverySeedJobs = jobs.filter((job) => /engineer|manager|analyst|specialist|associate|designer|scientist|account|support|product/i.test(job.title)).slice(0, 8);
+  const appliedJobs = scopedJobs.filter((job) => applied[job.id]);
+  const sizeCount = (label: string) => label === "All sizes" ? scopedJobs.length : sizeCounts.get(label) || 0;
+  const discoverySeedJobs = scopedJobs.filter((job) => /engineer|manager|analyst|specialist|associate|designer|scientist|account|support|product/i.test(job.title)).slice(0, 8);
   const emailPreviewSource = gmailMode === "applied" ? appliedJobs : discoverySeedJobs;
   const mockEmailUpdates = emailPreviewSource.slice(0, 8).map((job, index) => ({
     job,
@@ -390,7 +427,7 @@ export default function Home() {
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim();
-    const result = jobs.map((j) => ({ job: j, score: relevanceScore(j, q) })).filter(({ job, score }) => {
+    const result = scopedJobs.map((j) => ({ job: j, score: relevanceScore(j, q) })).filter(({ job, score }) => {
       return (!q || score > 0) && (!companyFocus || job.company === companyFocus) && (source === "All sources" || job.source === source) && (sector === "All sectors" || job.sector === sector) && (size === "All sizes" || job.companySize === size) && (!remoteOnly || job.remote) && (mode === "All roles" || job.category === mode) && (specialization === "All specializations" || roleSpecialization(job) === specialization) && (!interestOnly || matchesInterest(job, preferences));
     });
     if (q) return result.sort((a, b) => b.score - a.score || new Date(b.job.date).getTime() - new Date(a.job.date).getTime()).map(({ job }) => job);
@@ -398,10 +435,14 @@ export default function Home() {
     if (sort === "Company") return [...plain].sort((a, b) => a.company.localeCompare(b.company));
     if (sort === "Role family") return [...plain].sort((a, b) => a.category.localeCompare(b.category));
     return plain;
-  }, [jobs, deferredQuery, companyFocus, source, sector, size, remoteOnly, mode, specialization, sort, interestOnly, preferences]);
+  }, [scopedJobs, deferredQuery, companyFocus, source, sector, size, remoteOnly, mode, specialization, sort, interestOnly, preferences]);
 
-  const companyGroups = useMemo(() => Array.from(new Set(filtered.map((j) => j.company))).map((company) => {
-    const companyJobs = filtered.filter((j) => j.company === company);
+  const companyGroups = useMemo(() => Array.from(filtered.reduce((groups, job) => {
+    const group = groups.get(job.company) || [];
+    group.push(job);
+    groups.set(job.company, group);
+    return groups;
+  }, new Map<string, Job[]>()).entries()).map(([company, companyJobs]) => {
     const byRole = Object.fromEntries(Array.from(new Set(companyJobs.map((j) => j.category))).map((role) => [role, companyJobs.filter((j) => j.category === role).length]));
     return { company, jobs: companyJobs, sector: companyJobs[0].sector, companySize: companyJobs[0].companySize, source: companyJobs[0].source, byRole, contributionTags: contributionTags(companyJobs), interestMatches: companyJobs.filter((job) => matchesInterest(job, preferences)).length, remote: companyJobs.filter((j) => j.remote).length };
   }).sort((a, b) => (interestOnly ? b.interestMatches - a.interestMatches : b.jobs.length - a.jobs.length)), [filtered, interestOnly, preferences]);
@@ -415,7 +456,7 @@ export default function Home() {
   }, [query, sector, size]);
   const nebulaSectors = useMemo(() => sectors.filter((name) => name !== "All sectors").map((sectorName, sectorIndex) => {
     const sectorNeedle = sectorName.toLowerCase();
-    const sectorJobs = jobs.filter((job) => {
+    const sectorJobs = scopedJobs.filter((job) => {
       const postingSignals = [job.sector, job.category, ...job.tags].map((signal) => signal.toLowerCase());
       return postingSignals.includes(sectorNeedle);
     });
@@ -424,11 +465,11 @@ export default function Home() {
       return { company, count: companyJobs.length, size: companyJobs[0].companySize, tags: contributionTags(companyJobs, 4), roles: Array.from(new Set(companyJobs.map((job) => job.category))).slice(0, 4) };
     }).sort((a, b) => b.count - a.count);
     return { sector: sectorName, count: sectorJobs.length, companies, tags: contributionTags(sectorJobs, 6), index: sectorIndex };
-  }).filter((cluster) => cluster.count > 0).sort((a, b) => b.count - a.count), [jobs, sectors]);
+  }).filter((cluster) => cluster.count > 0).sort((a, b) => b.count - a.count), [scopedJobs, sectors]);
   const selectedNebulaCluster = nebulaSectors.find((cluster) => cluster.sector === selectedNebulaSector) ?? nebulaSectors[0];
   const selectedNebulaCompanyNode = selectedNebulaCluster?.companies.find((company) => company.company === selectedNebulaCompany) ?? selectedNebulaCluster?.companies[0];
   const visibleNebulaCompanies = selectedNebulaCluster?.companies.slice(0, 50) ?? [];
-  const selectedCompanyMarketJobs = selectedNebulaCompanyNode && selectedNebulaCluster ? jobs.filter((job) => {
+  const selectedCompanyMarketJobs = selectedNebulaCompanyNode && selectedNebulaCluster ? scopedJobs.filter((job) => {
     const signals = [job.sector, job.category, ...job.tags];
     return job.company === selectedNebulaCompanyNode.company && signals.some((signal) => signal.toLowerCase() === selectedNebulaCluster.sector.toLowerCase());
   }) : [];
@@ -451,7 +492,7 @@ export default function Home() {
     .filter((row) => row.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, 8) : [];
-  const selectedMarketJobs = selectedNebulaCluster ? jobs.filter((job) => [job.sector, job.category, ...job.tags].some((signal) => signal.toLowerCase() === selectedNebulaCluster.sector.toLowerCase())) : [];
+  const selectedMarketJobs = selectedNebulaCluster ? scopedJobs.filter((job) => [job.sector, job.category, ...job.tags].some((signal) => signal.toLowerCase() === selectedNebulaCluster.sector.toLowerCase())) : [];
   const selectedMarketRoleMix = Array.from(selectedMarketJobs.reduce((counts, job) => counts.set(job.category, (counts.get(job.category) || 0) + 1), new Map<string, number>()).entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const selectedMarketRemoteShare = selectedMarketJobs.length ? Math.round(selectedMarketJobs.filter((job) => job.remote).length / selectedMarketJobs.length * 100) : 0;
   const selectedMarketLeaderShare = selectedNebulaCluster?.companies[0]?.count && selectedNebulaCluster.count ? Math.round(selectedNebulaCluster.companies[0].count / selectedNebulaCluster.count * 100) : 0;
@@ -467,17 +508,17 @@ export default function Home() {
       </header>
 
       <section className="hero" id="top">
-        <div className="eyebrow">Company-first US opportunity index</div>
+        <div className="eyebrow">Local-first · free/public careers sources</div>
         <h1>Your next role,<br /><em>without the noise.</em></h1>
-        <p>All kinds of US roles pulled from official company careers systems. The broad watchlist is 5,000 companies; today’s live results come from supported direct feeds we can resolve.</p>
+        <p>Run your own job-market bulletin from official company careers systems. The broad watchlist is 5,000 companies; live counts only include free direct feeds this copy can resolve.</p>
         <div className="searchBox">
           <span className="searchIcon">⌕</span>
-          <input aria-label="Search jobs" value={query} onChange={(e) => { setQuery(e.target.value); setVisible(30); }} placeholder="Search roles, companies, skills, sectors, locations..." />
+          <input aria-label="Search jobs" value={searchDraft} onChange={(e) => setSearchDraft(e.target.value)} placeholder="Search roles, companies, skills, sectors, locations..." />
           <kbd>⌘ K</kbd>
         </div>
         <div className="stats">
-          <div><strong>{jobs.length || feedSummary.jobs}</strong><span>US open roles</span></div>
-          <div><strong>{new Set(jobs.map((j) => j.company)).size || feedSummary.companiesWithMatches}</strong><span>hiring companies</span></div>
+          <div><strong>{scopedJobs.length || feedSummary.jobs}</strong><span>{includeInternational ? "open roles" : "US open roles"}</span></div>
+          <div><strong>{new Set(scopedJobs.map((j) => j.company)).size || feedSummary.companiesWithMatches}</strong><span>hiring companies</span></div>
           <div><strong>{feedSummary.feedsChecked}</strong><span>feeds checked</span></div>
           <div><strong>{registrySummary.total}</strong><span>companies tracked</span></div>
         </div>
@@ -486,13 +527,13 @@ export default function Home() {
       <section className="workspace">
         <aside>
           <p className="label">US JOBS · ROLE FAMILY</p>
-          {roleFamilies.map((x) => <button key={x} className={mode === x ? "filter active" : "filter"} onClick={() => { setMode(x); setVisible(30); }}>{x}<span>{x === "All roles" ? jobs.length : jobs.filter((j) => j.category === x).length}</span></button>)}
-          {mode !== "All roles" && <div className="nestedFilters"><p className="label space">{mode.toUpperCase()} · SPECIALIZATION</p>{specializations.map((x) => <button key={x} className={specialization === x ? "filter active subFilter" : "filter subFilter"} onClick={() => { setSpecialization(x); setVisible(30); }}>{x}<span>{specializationCount(x)}</span></button>)}</div>}
+          {roleFamilies.map((x) => <button key={x} className={mode === x ? "filter active" : "filter"} onClick={() => toggleRoleFamily(x)}>{x}<span>{x === "All roles" ? scopedJobs.length : roleCounts.get(x) || 0}</span></button>)}
+          {mode !== "All roles" && <div className="nestedFilters"><p className="label space">{mode.toUpperCase()} · SPECIALIZATION</p>{specializations.map((x) => <button key={x} className={specialization === x ? "filter active subFilter" : "filter subFilter"} onClick={() => toggleSpecialization(x)}>{x}<span>{specializationCount(x)}</span></button>)}</div>}
           <p className="label space">COMPANY SIZE · LIVE ROLES</p>
-          {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => setSize(x)}>{x}<span>{sizeCount(x)}</span></button>)}
+          {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => toggleSize(x)}>{x}<span>{sizeCount(x)}</span></button>)}
           <p className="label space">SECTORS</p>
-          {sectors.map((x) => <button key={x} className={sector === x ? "filter active" : "filter"} onClick={() => { setSector(x); setVisible(30); }}>{x}<span>{x === "All sectors" ? registry.length : registry.filter((c) => c.sector === x).length}</span></button>)}
-          <div className="fantastic"><div><span className="pulse"></span><b>Coverage model</b></div><p>Watchlist: {registrySummary.total} companies. Supported feeds checked: {feedSummary.feedsChecked}. Resolved today: {feedSummary.boardsResolved}. Hiring now: {feedSummary.companiesWithMatches}.</p></div>
+          {sectors.map((x) => <button key={x} className={sector === x ? "filter active" : "filter"} onClick={() => toggleSector(x)}>{x}<span>{x === "All sectors" ? registry.length : registrySectorCounts.get(x) || 0}</span></button>)}
+          <div className="fantastic"><div><span className="pulse"></span><b>Coverage model</b></div><p>This is a forkable local index, not a claim about the whole US market. Watchlist: {registrySummary.total} companies. Free feeds checked: {feedSummary.feedsChecked}. Resolved today: {feedSummary.boardsResolved}. Hiring now in this snapshot: {feedSummary.companiesWithMatches}.</p></div>
         </aside>
 
         <div className="results">
@@ -501,6 +542,7 @@ export default function Home() {
             <button role="tab" aria-selected={view === "companies"} className={view === "companies" ? "active" : ""} onClick={() => setView("companies")}><span>02</span> Hiring companies</button>
             <button role="tab" aria-selected={view === "universe"} className={view === "universe" ? "active" : ""} onClick={() => setView("universe")}><span>03</span> 5,000 tracked</button>
             <button role="tab" aria-selected={view === "applied"} className={view === "applied" ? "active" : ""} onClick={() => setView("applied")}><span>04</span> Applied</button>
+            <button role="tab" aria-selected={view === "audit"} className={view === "audit" ? "active" : ""} onClick={() => setView("audit")}><span>05</span> Audit</button>
             <button className="addInline" onClick={() => setShowOnboard(true)}>+ Onboard company</button>
           </div>
 
@@ -508,15 +550,22 @@ export default function Home() {
             <div><span>Optional personalization</span><b>{preferences.length ? preferences.join(" · ") : "Browse neutrally, or tune the index to your interests."}</b></div>
             <div className="personalActions"><label className="toggle"><input type="checkbox" checked={interestOnly} disabled={!preferences.length} onChange={(e) => setInterestOnly(e.target.checked)} /><span></span>Use interests</label><button onClick={() => setShowTune(true)}>{preferences.length ? "Edit interests" : "Tune for me ->"}</button></div>
           </div>
+          <div className="auditStrip">
+            <div><b>Free/public sources only</b><span>Official ATS and company-controlled careers feeds; no paid job-board APIs needed for the bundled snapshot.</span></div>
+            <div><b>Source-audited postings</b><span>Rows need a provider response, stable source URL, title, location, and original apply link.</span></div>
+            <div><b>Dedupe-first index</b><span>Provider job ID first; canonical apply URL and company/title/location are retained as audit checks.</span></div>
+            <div><b>US default, global optional</b><span>{usJobs.length.toLocaleString()} US / US-eligible rows; {internationalJobs.length.toLocaleString()} international rows appear only when enabled.</span></div>
+          </div>
 
           <div className="resultHead">
             <div><p className="label">OFFICIAL CAREERS RESULTS</p><h2>{view === "roles" ? `${filtered.length} roles found` : view === "companies" ? `${companyGroups.length} companies hiring` : view === "applied" ? `${appliedJobs.length} applied roles` : `${registryFiltered.length} tracked companies shown`}</h2></div>
             <div className="controls">
               <label className="toggle"><input type="checkbox" checked={remoteOnly} onChange={(e) => setRemoteOnly(e.target.checked)} /><span></span>Remote only</label>
+              <label className="toggle"><input type="checkbox" checked={includeInternational} onChange={(e) => { setIncludeInternational(e.target.checked); setVisible(30); }} /><span></span>Include international</label>
               <select aria-label="Sort jobs" value={sort} onChange={(e) => setSort(e.target.value)}><option>Newest</option><option>Company</option><option>Role family</option></select>
             </div>
           </div>
-          {companyFocus && <div className="focusBanner"><div><span>Company focus</span><b>{companyFocus}</b></div><button onClick={() => { setCompanyFocus(""); setVisible(30); }}>Clear company focus ×</button></div>}
+          {companyFocus && <div className="focusBanner"><div><span>Company focus</span><b>{companyFocus}</b><small>Opened from Company Nebula. Clear this to return to all hiring companies.</small></div><button onClick={() => { setCompanyFocus(""); setVisible(30); }}>Clear company focus ×</button></div>}
 
           {view === "roles" && <><div className="jobList">{filtered.slice(0, visible).map((job) => <JobCard key={job.id} job={job} applied={Boolean(applied[job.id])} onOpen={() => setSelected(job)} onApply={() => toggleApplied(job)} />)}</div>{visible < filtered.length && <button className="load" onClick={() => setVisible((v) => v + 30)}>Load 30 more <span>↓</span></button>}</>}
 
@@ -537,7 +586,7 @@ export default function Home() {
         </div>
       </section>
 
-      {selected && <div className="drawerBackdrop" onClick={() => setSelected(null)}><aside className="drawer" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setSelected(null)}>×</button><span className="category">{cleanDisplayText(selected.category)}</span> <span className="source">{cleanDisplayText(selected.source)}</span><h2>{cleanDisplayText(selected.title)}</h2><h3>{cleanDisplayText(selected.company)}</h3><div className="drawerMeta"><span>⌖ {cleanDisplayText(selected.location)}</span><span>{selected.remote ? "Remote" : "On-site / hybrid"}</span><span>{fmtDate(selected.date)}</span></div><p className="hqEvidence"><b>Source verification:</b> {cleanDisplayText(selected.companyEvidence)}</p><p>{cleanDisplayText(selected.summary)}</p><div className="chips">{selected.tags.slice(0, 8).map((t, i) => <span key={`${t}-${i}`}>{cleanDisplayText(t)}</span>)}</div><button className="apply" onClick={() => toggleApplied(selected)}>{applied[selected.id] ? "Remove from applied" : "Mark as applied"}</button><a className="apply secondaryApply" href={selected.url} target="_blank" rel="noreferrer">View original listing ↗</a><small>Personalization is optional. Results remain official-company listings and are not résumé match scores.</small></aside></div>}
+      {selected && <div className="drawerBackdrop" onClick={() => setSelected(null)}><aside className="drawer" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setSelected(null)}>×</button><span className="category">{cleanDisplayText(selected.category)}</span> <span className="source">{cleanDisplayText(selected.source)}</span><h2>{cleanDisplayText(selected.title)}</h2><h3>{cleanDisplayText(selected.company)}</h3><div className="drawerMeta"><span>⌖ {cleanDisplayText(selected.location)}</span><span>{selected.isUs === false ? "International" : "US / US-eligible"}</span><span>{selected.remote ? "Remote" : "On-site / hybrid"}</span><span>{fmtDate(selected.date)}</span></div><p className="hqEvidence"><b>Audit trail:</b> {cleanDisplayText(selected.companyEvidence)} Duplicate protection uses canonical source URL first, then company/title/location fingerprint.</p><p>{cleanDisplayText(selected.summary)}</p><div className="chips">{selected.tags.slice(0, 8).map((t, i) => <span key={`${t}-${i}`}>{cleanDisplayText(t)}</span>)}</div><button className="apply" onClick={() => toggleApplied(selected)}>{applied[selected.id] ? "Remove from applied" : "Mark as applied"}</button><a className="apply secondaryApply" href={selected.url} target="_blank" rel="noreferrer">View original listing ↗</a><small>Personalization is optional. Results remain official-company listings and are not résumé match scores.</small></aside></div>}
 
       {showOnboard && <div className="drawerBackdrop" onClick={() => setShowOnboard(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowOnboard(false)}>×</button><p className="eyebrow">CAREERS DISCOVERY ENGINE</p><h2>Onboard any company.</h2><p>Enter a company and its website. Launchpad will inspect the official site, detect its careers system, and preview every live position directly from the source.</p><form onSubmit={discoverCompany}><label>Company name<input required value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Linear" /></label><label>Company website <small>recommended</small><input value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} placeholder="e.g. linear.app" /></label><button className="apply" disabled={discovering}>{discovering ? "Scanning official site..." : "Find careers page ->"}</button></form>{discoveryError && <div className="discoveryError">{discoveryError}</div>}{discovery && <div className="discoveryResult"><div className="verified">Official {discovery.provider} feed detected</div><h3>{discovery.company}</h3><p>{discovery.totalJobs} live positions found</p><div className="previewJobs">{discovery.jobs.slice(0, 8).map((j: any) => <a key={j.id} href={j.url} target="_blank" rel="noreferrer"><b>{j.title}</b><span>{j.location}</span></a>)}</div>{discovery.submitted ? <div className="submitted">Company submitted to the tracked registry.</div> : <button className="apply" onClick={submitCompany}>Add company to registry</button>}</div>}</section></div>}
 
@@ -553,25 +602,25 @@ export default function Home() {
             <button className="marketCore" onClick={() => { setNebulaClarity("markets"); setSelectedNebulaSector(null); setSelectedNebulaSignal(null); }}><b>US</b><span>{feedSummary.jobs.toLocaleString()} roles</span></button>
             {nebulaSectors.map((cluster, i) => {
               const active = selectedNebulaCluster?.sector === cluster.sector;
-              return <button key={cluster.sector} className={`marketSectorNode ${active ? "active" : ""} ${nebulaClarity === "markets" || active || nebulaClarity === "all" ? "" : "dim"}`} style={{ "--angle": `${(i / Math.max(1, nebulaSectors.length)) * 360 - 90}deg`, "--radius": `${nebulaClarity === "markets" ? 265 : 235}px`, "--mass": Math.min(1.9, 0.78 + cluster.count / Math.max(1, nebulaSectors[0]?.count || 1) * 1.05) } as CSSProperties} onClick={() => { setSelectedNebulaSector(cluster.sector); setSelectedNebulaCompany(null); setSelectedNebulaSignal(null); setNebulaClarity("selection"); }}>
+              return <button key={cluster.sector} className={`marketSectorNode ${active ? "active" : ""} ${nebulaClarity === "markets" || active || nebulaClarity === "all" ? "" : "dim"}`} style={{ "--angle": `${(i / Math.max(1, nebulaSectors.length)) * 360 - 90}deg`, "--radius": `${nebulaClarity === "markets" ? 265 : 235}px`, "--mass": Math.min(1.9, 0.78 + cluster.count / Math.max(1, nebulaSectors[0]?.count || 1) * 1.05) } as CSSProperties} onClick={() => { if (selectedNebulaSector === cluster.sector) { setSelectedNebulaSector(null); setSelectedNebulaCompany(null); setSelectedNebulaSignal(null); setNebulaClarity("markets"); } else { setSelectedNebulaSector(cluster.sector); setSelectedNebulaCompany(null); setSelectedNebulaSignal(null); setNebulaClarity("selection"); } }}>
                 <strong>{cluster.sector}</strong><span>{cluster.companies.length} companies · {cluster.count} roles</span>
               </button>;
             })}
-            {nebulaClarity !== "markets" && visibleNebulaCompanies.map((company, i) => <button key={company.company} className={`marketCompanyNode ${selectedNebulaCompanyNode?.company === company.company ? "active" : ""}`} style={{ "--angle": `${(i * 137.5) % 360}deg`, "--radius": `${118 + (i % 3) * 52 + Math.floor(i / 12) * 28}px`, "--mass": Math.min(1.75, 0.72 + company.count / Math.max(1, visibleNebulaCompanies[0]?.count || 1) * 0.9) } as CSSProperties} onClick={() => { setSelectedNebulaCompany(company.company); setSelectedNebulaSignal(null); }} title={`${company.company}: ${company.tags.join(" · ")}`}><strong>{company.company.slice(0, 2)}</strong><span>{company.company}</span><em>{company.count}</em></button>)}
+            {nebulaClarity !== "markets" && visibleNebulaCompanies.map((company, i) => <button key={company.company} className={`marketCompanyNode ${selectedNebulaCompanyNode?.company === company.company ? "active" : ""}`} style={{ "--angle": `${(i * 137.5) % 360}deg`, "--radius": `${118 + (i % 3) * 52 + Math.floor(i / 12) * 28}px`, "--mass": Math.min(1.75, 0.72 + company.count / Math.max(1, visibleNebulaCompanies[0]?.count || 1) * 0.9) } as CSSProperties} onClick={() => { setSelectedNebulaCompany((current) => current === company.company ? null : company.company); setSelectedNebulaSignal(null); }} title={`${company.company}: ${company.tags.join(" · ")}`}><strong>{company.company.slice(0, 2)}</strong><span>{company.company}</span><em>{company.count}</em></button>)}
             {nebulaClarity !== "markets" && nebulaPathSignals.map((node, i) => <div key={`path-${node.signal}`} className="marketPathBeam" style={{ "--angle": `${(i / Math.max(1, nebulaPathSignals.length)) * 360 + 18}deg`, "--length": `${92 + Math.min(80, node.count * 6)}px` } as CSSProperties}></div>)}
-            {nebulaClarity !== "markets" && selectedCompanySignals.map((node, i) => <button key={node.signal} className={`marketSignalNode ${selectedNebulaSignal === node.signal ? "active" : ""}`} style={{ "--angle": `${(i / Math.max(1, selectedCompanySignals.length)) * 360 + 18}deg`, "--radius": `${62 + (i % 2) * 36}px`, "--mass": Math.min(1.4, 0.8 + node.count / Math.max(1, selectedCompanySignals[0]?.count || 1) * 0.55) } as CSSProperties} onClick={() => setSelectedNebulaSignal(node.signal)} title={`${selectedNebulaCompanyNode?.company}: ${node.signal}`}><strong>{node.signal}</strong><em>{node.count}</em></button>)}
+            {nebulaClarity !== "markets" && selectedCompanySignals.map((node, i) => <button key={node.signal} className={`marketSignalNode ${selectedNebulaSignal === node.signal ? "active" : ""}`} style={{ "--angle": `${(i / Math.max(1, selectedCompanySignals.length)) * 360 + 18}deg`, "--radius": `${62 + (i % 2) * 36}px`, "--mass": Math.min(1.4, 0.8 + node.count / Math.max(1, selectedCompanySignals[0]?.count || 1) * 0.55) } as CSSProperties} onClick={() => setSelectedNebulaSignal((current) => current === node.signal ? null : node.signal)} title={`${selectedNebulaCompanyNode?.company}: ${node.signal}`}><strong>{node.signal}</strong><em>{node.count}</em></button>)}
           </div></div>
           <aside className="marketInspector">
             <div className="marketBreadcrumb"><button onClick={() => { setNebulaClarity("markets"); setSelectedNebulaSector(null); setSelectedNebulaSignal(null); }}>US market</button><span>→</span><button onClick={() => { setNebulaClarity("selection"); setSelectedNebulaSignal(null); }}>{selectedNebulaCluster?.sector ?? "Select market"}</button>{selectedNebulaCompanyNode && <><span>→</span><button onClick={() => setSelectedNebulaSignal(null)}>{selectedNebulaCompanyNode.company}</button></>}{selectedNebulaSignal && <><span>→</span><b>{selectedNebulaSignal}</b></>}</div>
             <p className="eyebrow">SELECTED MARKET</p><h3>{selectedNebulaCluster?.sector ?? "US job market"}</h3><p>{selectedNebulaCluster ? `${selectedNebulaCluster.count.toLocaleString()} official-posting contributions across ${selectedNebulaCluster.companies.length} hiring companies. Showing up to the top 50 company nodes for this market. Companies can appear in multiple markets when their own postings carry those signals.` : "Choose an industry node to inspect company contribution signals."}</p>
             {selectedNebulaCluster && <div className="marketTags">{selectedNebulaCluster.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>}
             {selectedNebulaCluster && <div className="marketBriefing"><b>Market briefing</b><div><span>Fresh roles</span><strong>{selectedMarketFreshJobs.toLocaleString()}</strong><em>last 7 days</em></div><div><span>Remote share</span><strong>{selectedMarketRemoteShare}%</strong><em>of postings</em></div><div><span>Leader concentration</span><strong>{selectedMarketLeaderShare}%</strong><em>{selectedNebulaCluster.companies[0]?.company ?? "top company"}</em></div>{selectedMarketRoleMix.length > 0 && <section><span>Dominant role families</span>{selectedMarketRoleMix.map(([role, count]) => <button key={role} onClick={() => { setMode(role); setSector("All sectors"); setQuery(selectedNebulaCluster.sector); setView("roles"); setShowNebula(false); }}>{role}<strong>{count}</strong></button>)}</section>}</div>}
-            {selectedNebulaCompanyNode && <div className="companyLens"><span>Company lens</span><h4>{selectedNebulaCompanyNode.company}</h4><b>{selectedNebulaCompanyNode.count} market contributions</b><div>{selectedCompanySignals.map((node) => <em key={node.signal} onClick={() => setSelectedNebulaSignal(node.signal)}>{node.signal}</em>)}</div><button onClick={() => { setCompanyFocus(selectedNebulaCompanyNode.company); setQuery(""); setSector("All sectors"); setSource("All sources"); setView("companies"); setVisible(30); setShowNebula(false); }}>Open company results →</button></div>}
-            {selectedCompanySignals.length > 0 && <div className="marketTopCompanies"><b>Nested signals for {selectedNebulaCompanyNode?.company}</b>{selectedCompanySignals.map((node) => <button key={node.signal} className={selectedNebulaSignal === node.signal ? "active" : ""} onClick={() => setSelectedNebulaSignal(node.signal)}><span>{node.signal}</span><em>{selectedNebulaCluster?.sector} contribution node</em><strong>{node.count}</strong></button>)}</div>}
+            {selectedNebulaCompanyNode && <div className="companyLens"><span>Company lens</span><h4>{selectedNebulaCompanyNode.company}</h4><b>{selectedNebulaCompanyNode.count} market contributions</b><div>{selectedCompanySignals.map((node) => <em key={node.signal} onClick={() => setSelectedNebulaSignal(node.signal)}>{node.signal}</em>)}</div><button onClick={() => { setCompanyFocus(selectedNebulaCompanyNode.company); setSearchDraft(""); setQuery(""); setSector("All sectors"); setSource("All sources"); setView("companies"); setVisible(30); setShowNebula(false); }}>Open company results →</button></div>}
+            {selectedCompanySignals.length > 0 && <div className="marketTopCompanies"><b>Nested signals for {selectedNebulaCompanyNode?.company}</b>{selectedCompanySignals.map((node) => <button key={node.signal} className={selectedNebulaSignal === node.signal ? "active" : ""} onClick={() => setSelectedNebulaSignal((current) => current === node.signal ? null : node.signal)}><span>{node.signal}</span><em>{selectedNebulaCluster?.sector} contribution node</em><strong>{node.count}</strong></button>)}</div>}
             {selectedSignalJobs.length > 0 && <div className="marketTopCompanies"><b>{selectedNebulaSignal ? `Postings tagged ${selectedNebulaSignal}` : "Postings behind this company node"}</b>{selectedSignalJobs.map((job) => <button key={job.id} onClick={() => { setSelected(job); setShowNebula(false); }}><span>{job.title}</span><em>{job.location}</em><strong>Open</strong></button>)}</div>}
-            {visibleNebulaCompanies.length > 0 && <div className="marketTopCompanies"><b>Top companies in this market</b>{visibleNebulaCompanies.map((company, index) => <button key={company.company} className={selectedNebulaCompanyNode?.company === company.company ? "active" : ""} onClick={() => { setSelectedNebulaCompany(company.company); setSelectedNebulaSignal(null); }}><span>{index + 1}. {company.company}</span><em>{company.tags.slice(0, 3).join(" · ")}</em><strong>{company.count}</strong></button>)}</div>}
-            {nebulaInteractions.length > 0 && <div className="marketInteractions"><b>How nodes interact</b>{nebulaInteractions.map(({ company, sharedTags, sharedRoles }) => <button key={company.company} onClick={() => { setSelectedNebulaCompany(company.company); setSelectedNebulaSignal(null); }}><span>{company.company}</span><em>{[...sharedTags, ...sharedRoles].slice(0, 4).join(" · ")}</em><strong>{company.count} roles</strong></button>)}<small>Interaction here means shared official-posting tags or role families inside the selected sector.</small></div>}
-            <div className="marketList"><b>Industries</b>{nebulaSectors.map((cluster) => <button key={cluster.sector} className={selectedNebulaCluster?.sector === cluster.sector ? "active" : ""} onClick={() => { setSelectedNebulaSector(cluster.sector); setSelectedNebulaCompany(null); setSelectedNebulaSignal(null); setNebulaClarity("selection"); }}><span>{cluster.sector}</span><em>{cluster.companies.length} companies · {cluster.count.toLocaleString()} roles</em></button>)}</div>
+            {visibleNebulaCompanies.length > 0 && <div className="marketTopCompanies"><b>Top companies in this market</b>{visibleNebulaCompanies.map((company, index) => <button key={company.company} className={selectedNebulaCompanyNode?.company === company.company ? "active" : ""} onClick={() => { setSelectedNebulaCompany((current) => current === company.company ? null : company.company); setSelectedNebulaSignal(null); }}><span>{index + 1}. {company.company}</span><em>{company.tags.slice(0, 3).join(" · ")}</em><strong>{company.count}</strong></button>)}</div>}
+            {nebulaInteractions.length > 0 && <div className="marketInteractions"><b>How nodes interact</b>{nebulaInteractions.map(({ company, sharedTags, sharedRoles }) => <button key={company.company} onClick={() => { setSelectedNebulaCompany((current) => current === company.company ? null : company.company); setSelectedNebulaSignal(null); }}><span>{company.company}</span><em>{[...sharedTags, ...sharedRoles].slice(0, 4).join(" · ")}</em><strong>{company.count} roles</strong></button>)}<small>Interaction here means shared official-posting tags or role families inside the selected sector.</small></div>}
+            <div className="marketList"><b>Industries</b>{nebulaSectors.map((cluster) => <button key={cluster.sector} className={selectedNebulaCluster?.sector === cluster.sector ? "active" : ""} onClick={() => { if (selectedNebulaSector === cluster.sector) { setSelectedNebulaSector(null); setSelectedNebulaCompany(null); setSelectedNebulaSignal(null); setNebulaClarity("markets"); } else { setSelectedNebulaSector(cluster.sector); setSelectedNebulaCompany(null); setSelectedNebulaSignal(null); setNebulaClarity("selection"); } }}><span>{cluster.sector}</span><em>{cluster.companies.length} companies · {cluster.count.toLocaleString()} roles</em></button>)}</div>
           </aside>
         </div>
       </section></div>}

@@ -32,7 +32,7 @@ test("server-renders the Launchpad public shell", async () => {
   assert.match(html, /<title>Launchpad — Direct Company US Jobs<\/title>/i);
   assert.match(html, /Your next role/);
   assert.match(html, /without the noise/);
-  assert.match(html, /All kinds of US roles pulled from official company careers systems/);
+  assert.match(html, /Run your own job-market bulletin from official company careers systems/);
   assert.match(html, /Company Nebula/);
   assert.match(html, /Link Gmail/);
   assert.match(html, /\+ Add company/);
@@ -51,6 +51,10 @@ test("keeps public docs and source aligned with the product", async () => {
 
   assert.match(readme, /npm install\nnpm run dev/);
   assert.match(readme, /No paid third-party job aggregation APIs are required/);
+  assert.match(readme, /forked, remixed, and run locally/);
+  assert.match(readme, /npm run data:audit/);
+  assert.match(page, /Include international/);
+  assert.match(page, /Dedupe-first index/);
   assert.match(readme, /All detected emails/);
   assert.match(readme, /Matched to applied/);
   assert.match(page, /gmailMode === "all"/);
