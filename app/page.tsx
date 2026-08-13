@@ -13,6 +13,7 @@ const fmtDate = (value: string) => {
 export default function Home() {
   const [query, setQuery] = useState("");
   const [source, setSource] = useState("All sources");
+  const [sector, setSector] = useState("All sectors");
   const [mode, setMode] = useState("All roles");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [sort, setSort] = useState("Newest");
@@ -20,30 +21,30 @@ export default function Home() {
   const [visible, setVisible] = useState(30);
 
   const sources = ["All sources", ...Array.from(new Set(jobs.map((j) => j.source)))];
+  const sectors = ["All sectors", ...Array.from(new Set(jobs.map((j) => j.sector))).sort()];
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     const result = jobs.filter((j) => {
       const haystack = `${j.title} ${j.company} ${j.location} ${j.tags.join(" ")} ${j.summary}`.toLowerCase();
-      return (!q || haystack.includes(q)) && (source === "All sources" || j.source === source) && (!remoteOnly || j.remote) && (mode === "All roles" || j.category === mode);
+      return (!q || haystack.includes(q)) && (source === "All sources" || j.source === source) && (sector === "All sectors" || j.sector === sector) && (!remoteOnly || j.remote) && (mode === "All roles" || j.category === mode);
     });
     return sort === "Company" ? [...result].sort((a,b) => a.company.localeCompare(b.company)) : result;
-  }, [query, source, remoteOnly, mode, sort]);
+  }, [query, source, sector, remoteOnly, mode, sort]);
 
   const aiCount = jobs.filter(j => j.category === "Applied AI").length;
-  const remoteCount = jobs.filter(j => j.remote).length;
 
   return (
     <main>
       <header className="topbar">
         <a className="brand" href="#top"><span className="brandMark">L</span><span>Launchpad</span></a>
-        <div className="fresh"><span></span> 30-day dataset · Jul 14–Aug 13, 2026</div>
+        <div className="fresh"><span></span> Official company career feeds</div>
         <button className="ghost" onClick={() => window.scrollTo({top:0, behavior:"smooth"})}>Search jobs</button>
       </header>
 
       <section className="hero" id="top">
-        <div className="eyebrow">US-headquartered company opportunity index</div>
+        <div className="eyebrow">Company-first US opportunity index</div>
         <h1>Your next role,<br/><em>without the noise.</em></h1>
-        <p>Thirty days of software engineering and applied AI openings at verified US-headquartered companies, with explicit US candidate eligibility.</p>
+        <p>Software engineering and applied AI openings pulled directly from official careers systems at curated US companies—no third-party job aggregators.</p>
         <div className="searchBox">
           <span className="searchIcon">⌕</span>
           <input aria-label="Search jobs" value={query} onChange={e => {setQuery(e.target.value); setVisible(30)}} placeholder="Search titles, skills, companies, locations…" />
@@ -52,8 +53,8 @@ export default function Home() {
         <div className="stats">
           <div><strong>{jobs.length}</strong><span>open roles</span></div>
           <div><strong>{aiCount}</strong><span>AI-focused</span></div>
-          <div><strong>{remoteCount}</strong><span>remote</span></div>
-          <div><strong>{new Set(jobs.map(j=>j.company)).size}</strong><span>US companies</span></div>
+          <div><strong>{new Set(jobs.map(j=>j.company)).size}</strong><span>hiring companies</span></div>
+          <div><strong>100</strong><span>companies tracked</span></div>
         </div>
       </section>
 
@@ -61,13 +62,11 @@ export default function Home() {
         <aside>
           <p className="label">US JOBS · ROLE FOCUS</p>
           {["All roles","Software engineering","Applied AI"].map(x => <button key={x} className={mode===x?"filter active":"filter"} onClick={()=>{setMode(x);setVisible(30)}}>{x}<span>→</span></button>)}
+          <p className="label space">SECTORS</p>
+          {sectors.map(x => <button key={x} className={sector===x?"filter active":"filter"} onClick={()=>{setSector(x);setVisible(30)}}>{x}<span>{x === "All sectors" ? jobs.length : jobs.filter(j=>j.sector===x).length}</span></button>)}
           <p className="label space">SOURCES</p>
           {sources.map(x => <button key={x} className={source===x?"filter active":"filter"} onClick={()=>{setSource(x);setVisible(30)}}>{x}<span>{x === "All sources" ? jobs.length : jobs.filter(j=>j.source===x).length}</span></button>)}
-          <div className="fantastic">
-            <div><span className="pulse"></span><b>Fantastic.jobs</b></div>
-            <p>Ready to connect your 7-day trial key.</p>
-            <a href="https://accounts.fantastic.jobs" target="_blank" rel="noreferrer">Get free trial key ↗</a>
-          </div>
+          <div className="fantastic"><div><span className="pulse"></span><b>Direct-source mode</b></div><p>Each opening comes from a company-controlled Greenhouse or Ashby careers feed.</p></div>
         </aside>
 
         <div className="results">
@@ -87,7 +86,7 @@ export default function Home() {
                   <div className="jobTop"><h3>{job.title}</h3><span>{fmtDate(job.date)}</span></div>
                   <p className="company">{job.company} <i>·</i> {job.location}</p>
                   <p className="summary">{job.summary}</p>
-                  <div className="chips"><span className="category">{job.category}</span><span className="hq">US HQ verified</span><span className="source">{job.source}</span>{job.remote&&<span>Remote</span>}{job.level&&<span>{job.level}</span>}{job.type&&<span>{job.type}</span>}{job.tags.slice(0,2).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
+                  <div className="chips"><span className="category">{job.category}</span><span className="hq">{job.sector}</span><span className="source">Official careers</span>{job.remote&&<span>Remote</span>}</div>
                 </div>
                 <a className="quickApply" aria-label={`Open application for ${job.title}`} href={job.url} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()}>Apply ↗</a>
               </article>
@@ -105,7 +104,7 @@ export default function Home() {
           <h2>{selected.title}</h2>
           <h3>{selected.company}</h3>
           <div className="drawerMeta"><span>⌖ {selected.location}</span><span>{selected.remote?"Remote":"On-site / hybrid"}</span><span>{fmtDate(selected.date)}</span></div>
-          <p className="hqEvidence"><b>US headquarters evidence:</b> {selected.companyEvidence}</p>
+          <p className="hqEvidence"><b>Source verification:</b> {selected.companyEvidence}</p>
           <p>{selected.summary}</p>
           <div className="chips">{selected.tags.slice(0,8).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
           {selected.salary && <p className="salary">Listed compensation: <b>{selected.salary}</b></p>}

@@ -1,0 +1,866 @@
+[
+  {
+    "company": "OpenAI",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "openai",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Anthropic",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "anthropic",
+    "status": 200,
+    "total": 417,
+    "matchingJobs": 91
+  },
+  {
+    "company": "Scale AI",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "scaleai",
+    "status": 200,
+    "total": 213,
+    "matchingJobs": 37
+  },
+  {
+    "company": "Weights & Biases",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "weightsandbiases",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Hugging Face",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "huggingface",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Databricks",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "databricks",
+    "status": 200,
+    "total": 800,
+    "matchingJobs": 129
+  },
+  {
+    "company": "Cohere",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "cohere",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Perplexity",
+    "sector": "AI & Developer Tools",
+    "ats": "ashby",
+    "slug": "perplexity",
+    "status": 200,
+    "total": 99,
+    "matchingJobs": 11
+  },
+  {
+    "company": "Together AI",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "togetherai",
+    "status": 200,
+    "total": 57,
+    "matchingJobs": 4
+  },
+  {
+    "company": "Anyscale",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "anyscale",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "LangChain",
+    "sector": "AI & Developer Tools",
+    "ats": "ashby",
+    "slug": "langchain",
+    "status": 200,
+    "total": 105,
+    "matchingJobs": 2
+  },
+  {
+    "company": "Modal",
+    "sector": "AI & Developer Tools",
+    "ats": "ashby",
+    "slug": "modal",
+    "status": 200,
+    "total": 31,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Replicate",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "replicate",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Vercel",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "vercel",
+    "status": 200,
+    "total": 83,
+    "matchingJobs": 17
+  },
+  {
+    "company": "Supabase",
+    "sector": "AI & Developer Tools",
+    "ats": "ashby",
+    "slug": "supabase",
+    "status": 200,
+    "total": 55,
+    "matchingJobs": 0
+  },
+  {
+    "company": "GitLab",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "gitlab",
+    "status": 200,
+    "total": 195,
+    "matchingJobs": 13
+  },
+  {
+    "company": "HashiCorp",
+    "sector": "AI & Developer Tools",
+    "ats": "greenhouse",
+    "slug": "hashicorp",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "MongoDB",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "mongodb",
+    "status": 200,
+    "total": 411,
+    "matchingJobs": 26
+  },
+  {
+    "company": "Cloudflare",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "cloudflare",
+    "status": 200,
+    "total": 304,
+    "matchingJobs": 3
+  },
+  {
+    "company": "Snowflake",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "snowflake",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Datadog",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "datadog",
+    "status": 200,
+    "total": 435,
+    "matchingJobs": 18
+  },
+  {
+    "company": "Confluent",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "confluent",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Twilio",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "twilio",
+    "status": 200,
+    "total": 165,
+    "matchingJobs": 25
+  },
+  {
+    "company": "Asana",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "asana",
+    "status": 200,
+    "total": 136,
+    "matchingJobs": 11
+  },
+  {
+    "company": "Notion",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "notion",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Airtable",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "airtable",
+    "status": 200,
+    "total": 16,
+    "matchingJobs": 1
+  },
+  {
+    "company": "Figma",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "figma",
+    "status": 200,
+    "total": 159,
+    "matchingJobs": 17
+  },
+  {
+    "company": "Rippling",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "rippling",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Gusto",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "gusto",
+    "status": 200,
+    "total": 91,
+    "matchingJobs": 24
+  },
+  {
+    "company": "Plaid",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "plaid",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Affirm",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "affirm",
+    "status": 200,
+    "total": 196,
+    "matchingJobs": 27
+  },
+  {
+    "company": "Coinbase",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "coinbase",
+    "status": 200,
+    "total": 167,
+    "matchingJobs": 25
+  },
+  {
+    "company": "Robinhood",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "robinhood",
+    "status": 200,
+    "total": 121,
+    "matchingJobs": 14
+  },
+  {
+    "company": "Brex",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "brex",
+    "status": 200,
+    "total": 284,
+    "matchingJobs": 19
+  },
+  {
+    "company": "Ramp",
+    "sector": "Fintech",
+    "ats": "ashby",
+    "slug": "ramp",
+    "status": 200,
+    "total": 135,
+    "matchingJobs": 3
+  },
+  {
+    "company": "Chime",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "chime",
+    "status": 200,
+    "total": 57,
+    "matchingJobs": 19
+  },
+  {
+    "company": "SoFi",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "sofi",
+    "status": 200,
+    "total": 59,
+    "matchingJobs": 3
+  },
+  {
+    "company": "Mercury",
+    "sector": "Fintech",
+    "ats": "ashby",
+    "slug": "mercury",
+    "status": 200,
+    "total": 0,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Highmark Health",
+    "sector": "Healthcare & Biotech",
+    "ats": "greenhouse",
+    "slug": "highmarkhealth",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Oscar Health",
+    "sector": "Healthcare & Biotech",
+    "ats": "greenhouse",
+    "slug": "oscar",
+    "status": 200,
+    "total": 263,
+    "matchingJobs": 10
+  },
+  {
+    "company": "Ro",
+    "sector": "Healthcare & Biotech",
+    "ats": "greenhouse",
+    "slug": "ro",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Zocdoc",
+    "sector": "Healthcare & Biotech",
+    "ats": "greenhouse",
+    "slug": "zocdoc",
+    "status": 200,
+    "total": 53,
+    "matchingJobs": 10
+  },
+  {
+    "company": "Tempus",
+    "sector": "Healthcare & Biotech",
+    "ats": "greenhouse",
+    "slug": "tempus",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Recursion",
+    "sector": "Healthcare & Biotech",
+    "ats": "greenhouse",
+    "slug": "recursionpharmaceuticals",
+    "status": 200,
+    "total": 16,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Benchling",
+    "sector": "Healthcare & Biotech",
+    "ats": "greenhouse",
+    "slug": "benchling",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Flatiron Health",
+    "sector": "Healthcare & Biotech",
+    "ats": "greenhouse",
+    "slug": "flatironhealth",
+    "status": 200,
+    "total": 34,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Anduril",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "andurilindustries",
+    "status": 200,
+    "total": 2199,
+    "matchingJobs": 407
+  },
+  {
+    "company": "Palantir",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "palantir",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Shield AI",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "shieldai",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Saronic",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "saronic",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Varda Space",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "vardaspace",
+    "status": 200,
+    "total": 95,
+    "matchingJobs": 12
+  },
+  {
+    "company": "Astranis",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "astranis",
+    "status": 200,
+    "total": 84,
+    "matchingJobs": 13
+  },
+  {
+    "company": "Rocket Lab",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "rocketlab",
+    "status": 200,
+    "total": 402,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Relativity Space",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "relativity",
+    "status": 200,
+    "total": 366,
+    "matchingJobs": 23
+  },
+  {
+    "company": "Skydio",
+    "sector": "Defense & Aerospace",
+    "ats": "greenhouse",
+    "slug": "skydio",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Waymo",
+    "sector": "Automotive & Robotics",
+    "ats": "greenhouse",
+    "slug": "waymo",
+    "status": 200,
+    "total": 388,
+    "matchingJobs": 133
+  },
+  {
+    "company": "Zoox",
+    "sector": "Automotive & Robotics",
+    "ats": "greenhouse",
+    "slug": "zoox",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Nuro",
+    "sector": "Automotive & Robotics",
+    "ats": "greenhouse",
+    "slug": "nuro",
+    "status": 200,
+    "total": 107,
+    "matchingJobs": 56
+  },
+  {
+    "company": "Aurora",
+    "sector": "Automotive & Robotics",
+    "ats": "greenhouse",
+    "slug": "aurora",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Motional",
+    "sector": "Automotive & Robotics",
+    "ats": "greenhouse",
+    "slug": "motional",
+    "status": 200,
+    "total": 80,
+    "matchingJobs": 15
+  },
+  {
+    "company": "Agility Robotics",
+    "sector": "Automotive & Robotics",
+    "ats": "greenhouse",
+    "slug": "agilityrobotics",
+    "status": 200,
+    "total": 61,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Zipline",
+    "sector": "Automotive & Robotics",
+    "ats": "greenhouse",
+    "slug": "flyzipline",
+    "status": 200,
+    "total": 264,
+    "matchingJobs": 29
+  },
+  {
+    "company": "Cruise",
+    "sector": "Automotive & Robotics",
+    "ats": "greenhouse",
+    "slug": "cruise",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Reddit",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "reddit",
+    "status": 200,
+    "total": 154,
+    "matchingJobs": 32
+  },
+  {
+    "company": "Discord",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "discord",
+    "status": 200,
+    "total": 50,
+    "matchingJobs": 22
+  },
+  {
+    "company": "Pinterest",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "pinterest",
+    "status": 200,
+    "total": 215,
+    "matchingJobs": 57
+  },
+  {
+    "company": "Snap",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "snap",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "DoorDash",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "doordashusa",
+    "status": 200,
+    "total": 469,
+    "matchingJobs": 48
+  },
+  {
+    "company": "Instacart",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "instacart",
+    "status": 200,
+    "total": 113,
+    "matchingJobs": 12
+  },
+  {
+    "company": "Duolingo",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "duolingo",
+    "status": 200,
+    "total": 69,
+    "matchingJobs": 5
+  },
+  {
+    "company": "Roblox",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "roblox",
+    "status": 200,
+    "total": 224,
+    "matchingJobs": 114
+  },
+  {
+    "company": "Roku",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "roku",
+    "status": 200,
+    "total": 236,
+    "matchingJobs": 47
+  },
+  {
+    "company": "Twitch",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "twitch",
+    "status": 200,
+    "total": 64,
+    "matchingJobs": 3
+  },
+  {
+    "company": "Samsara",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "samsara",
+    "status": 200,
+    "total": 268,
+    "matchingJobs": 17
+  },
+  {
+    "company": "Form Energy",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "formenergy",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Redwood Materials",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "redwoodmaterials",
+    "status": 200,
+    "total": 149,
+    "matchingJobs": 8
+  },
+  {
+    "company": "Commonwealth Fusion Systems",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "cfsenergy",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Fervo Energy",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "fervoenergy",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Watershed",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "watershed",
+    "status": 200,
+    "total": 8,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Crusoe",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "crusoe",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Charm Industrial",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "charmindustrial",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Carbon Direct",
+    "sector": "Climate & Infrastructure",
+    "ats": "greenhouse",
+    "slug": "carbon-direct",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "CrowdStrike",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "crowdstrike",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Wiz",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "wizinc",
+    "status": 200,
+    "total": 114,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Snyk",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "snyk",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Abnormal Security",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "abnormalsecurity",
+    "status": 200,
+    "total": 68,
+    "matchingJobs": 7
+  },
+  {
+    "company": "Chainguard",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "chainguard",
+    "status": 200,
+    "total": 83,
+    "matchingJobs": 10
+  },
+  {
+    "company": "Huntress",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "huntress",
+    "status": 200,
+    "total": 36,
+    "matchingJobs": 4
+  },
+  {
+    "company": "Vanta",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "vanta",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Drata",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "drata",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Arctic Wolf",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "arcticwolf",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Rubrik",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "rubrik",
+    "status": 200,
+    "total": 115,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Cloudflare",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "cloudflare",
+    "status": 200,
+    "total": 304,
+    "matchingJobs": 3
+  },
+  {
+    "company": "Block",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "block",
+    "status": 200,
+    "total": 194,
+    "matchingJobs": 36
+  },
+  {
+    "company": "Stripe",
+    "sector": "Fintech",
+    "ats": "greenhouse",
+    "slug": "stripe",
+    "status": 200,
+    "total": 567,
+    "matchingJobs": 40
+  },
+  {
+    "company": "Lyft",
+    "sector": "Consumer Technology",
+    "ats": "greenhouse",
+    "slug": "lyft",
+    "status": 200,
+    "total": 170,
+    "matchingJobs": 17
+  },
+  {
+    "company": "Dropbox",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "dropbox",
+    "status": 200,
+    "total": 35,
+    "matchingJobs": 1
+  },
+  {
+    "company": "Okta",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "okta",
+    "status": 200,
+    "total": 334,
+    "matchingJobs": 22
+  },
+  {
+    "company": "SentinelOne",
+    "sector": "Cybersecurity",
+    "ats": "greenhouse",
+    "slug": "sentinelone",
+    "status": 404,
+    "matchingJobs": 0
+  },
+  {
+    "company": "Five9",
+    "sector": "Enterprise Software & Cloud",
+    "ats": "greenhouse",
+    "slug": "five9",
+    "status": 200,
+    "total": 146,
+    "matchingJobs": 0
+  }
+]
