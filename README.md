@@ -27,7 +27,14 @@ npm install
 npm run dev
 ```
 
-That is enough to run the dashboard locally. The first dev/build/start run automatically unpacks the bundled official-posting snapshot into `public/jobs-data.json`, so nontechnical users do not need any crawler, API key, or manual data step. There are no required paid APIs for the default demo dataset.
+That is enough to run the dashboard locally. Install automatically unpacks the bundled official-posting snapshot into `public/jobs-data.json`, so nontechnical users do not need any crawler, API key, or manual data step. There are no required paid APIs for the default demo dataset.
+
+If your terminal says Node is too old, install Node 22:
+
+```bash
+nvm install 22
+nvm use 22
+```
 
 Build for production:
 

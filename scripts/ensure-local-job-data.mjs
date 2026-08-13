@@ -1,6 +1,12 @@
 import fs from "node:fs";
 import zlib from "node:zlib";
 
+const [major = 0, minor = 0] = process.versions.node.split(".").map(Number);
+if (major < 22 || (major === 22 && minor < 13)) {
+  console.error(`[launchpad] Node.js ${process.versions.node} is too old. Use Node.js 22.13 or newer, then rerun npm install and npm run dev.`);
+  process.exit(1);
+}
+
 const plainPath = "public/jobs-data.json";
 const manifestPath = "public/job-snapshot/manifest.json";
 const appEmptyPath = "app/jobs-data.json";
