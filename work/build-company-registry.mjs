@@ -1,7 +1,7 @@
 import fs from "node:fs";
 
 const TARGET = 5000;
-const SIZE_ORDER = ["Startup", "Small", "Medium", "Large", "Enterprise"];
+const SIZE_ORDER = ["Startup", "Small", "Medium", "Large", "Enterprise", "Unknown"];
 
 function parseCsv(text) {
   const rows = [];
@@ -213,4 +213,6 @@ const summary = {
 
 fs.writeFileSync("app/company-registry.json", `${JSON.stringify(companies, null, 2)}\n`);
 fs.writeFileSync("app/company-registry-summary.json", `${JSON.stringify(summary, null, 2)}\n`);
+const preview = SIZE_ORDER.flatMap((size) => companies.filter((company) => company.size === size).slice(0, 120)).slice(0, 720);
+fs.writeFileSync("app/company-registry-preview.json", `${JSON.stringify(preview, null, 2)}\n`);
 console.log(JSON.stringify(summary, null, 2));

@@ -1,0 +1,26 @@
+{
+  "feedsChecked": 1123,
+  "boardsResolved": 783,
+  "companiesWithMatches": 452,
+  "jobs": 15490,
+  "sizes": {
+    "Unknown": 1996,
+    "Large": 3069,
+    "Enterprise": 2615,
+    "Medium": 7778,
+    "Startup": 32
+  },
+  "sectors": {
+    "Gaming & Interactive": 3641,
+    "Fintech": 982,
+    "Consumer Technology": 1126,
+    "AI & Developer Tools": 1270,
+    "Cybersecurity": 367,
+    "Other US Companies": 5557,
+    "Enterprise Software & Cloud": 807,
+    "Climate & Infrastructure": 280,
+    "Automotive & Robotics": 732,
+    "Defense & Aerospace": 488,
+    "Healthcare & Biotech": 240
+  }
+}
