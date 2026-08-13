@@ -1,0 +1,41 @@
+{
+  "total": 5000,
+  "size": {
+    "Enterprise": 72,
+    "Large": 129,
+    "Medium": 1307,
+    "Small": 208,
+    "Startup": 143,
+    "Unknown": 3141
+  },
+  "sector": {
+    "AI & Developer Tools": 17,
+    "Automotive & Robotics": 9,
+    "Climate & Infrastructure": 55,
+    "Consumer Technology": 46,
+    "Cybersecurity": 37,
+    "Defense & Aerospace": 54,
+    "Enterprise Software & Cloud": 94,
+    "Fintech": 150,
+    "Gaming & Interactive": 2663,
+    "Healthcare & Biotech": 90,
+    "Other US Companies": 1785
+  },
+  "source": {
+    "Curated direct-feed seed": 99,
+    "ModelEarth US company directory": 528,
+    "OpenJobs ATS/company index": 3112,
+    "OpenJobs US hiring signal": 1261
+  },
+  "provider": {
+    "ashby": 182,
+    "breezy": 46,
+    "careers-site": 2713,
+    "greenhouse": 655,
+    "icims": 1,
+    "lever": 280,
+    "smartrecruiters": 234,
+    "unknown": 732,
+    "workday": 157
+  }
+}
