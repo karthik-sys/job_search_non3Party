@@ -36,14 +36,14 @@ export default function Home() {
     <main>
       <header className="topbar">
         <a className="brand" href="#top"><span className="brandMark">L</span><span>Launchpad</span></a>
-        <div className="fresh"><span></span> Live dataset · refreshed Aug 13, 2026</div>
+        <div className="fresh"><span></span> 30-day dataset · Jul 14–Aug 13, 2026</div>
         <button className="ghost" onClick={() => window.scrollTo({top:0, behavior:"smooth"})}>Search jobs</button>
       </header>
 
       <section className="hero" id="top">
         <div className="eyebrow">United States engineering opportunity index</div>
         <h1>Your next role,<br/><em>without the noise.</em></h1>
-        <p>Software engineering and applied AI openings explicitly based in—or open to candidates in—the United States, gathered from independent job APIs.</p>
+        <p>Thirty days of software engineering and applied AI openings explicitly based in—or open to candidates in—the United States, audited and deduplicated across independent job APIs.</p>
         <div className="searchBox">
           <span className="searchIcon">⌕</span>
           <input aria-label="Search jobs" value={query} onChange={e => {setQuery(e.target.value); setVisible(30)}} placeholder="Search titles, skills, companies, locations…" />
@@ -53,7 +53,7 @@ export default function Home() {
           <div><strong>{jobs.length}</strong><span>open roles</span></div>
           <div><strong>{aiCount}</strong><span>AI-focused</span></div>
           <div><strong>{remoteCount}</strong><span>remote</span></div>
-          <div><strong>{new Set(jobs.map(j=>j.source)).size}</strong><span>US sources</span></div>
+          <div><strong>30</strong><span>days covered</span></div>
         </div>
       </section>
 
