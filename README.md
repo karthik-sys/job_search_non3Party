@@ -27,7 +27,7 @@ npm install
 npm run dev
 ```
 
-That is enough to run the dashboard locally. There are no required paid APIs for the default demo dataset.
+That is enough to run the dashboard locally. The first dev/build/start run automatically unpacks the bundled official-posting snapshot into `public/jobs-data.json`, so nontechnical users do not need any crawler, API key, or manual data step. There are no required paid APIs for the default demo dataset.
 
 Build for production:
 
@@ -70,6 +70,7 @@ Pack and validate a refreshed snapshot:
 
 ```bash
 npm run data:pack
+npm run data:unpack
 npm run data:repair
 npm run data:audit
 ```
