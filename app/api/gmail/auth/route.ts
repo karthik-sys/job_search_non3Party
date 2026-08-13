@@ -8,6 +8,6 @@ export async function GET(req: NextRequest) {
   }
   const state = crypto.randomUUID();
   const res = NextResponse.redirect(gmailAuthUrl(req, state));
-  setStateCookie(res, state);
+  setStateCookie(req, res, state);
   return res;
 }

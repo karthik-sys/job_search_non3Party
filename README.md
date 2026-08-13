@@ -18,7 +18,7 @@ The product goal is simple: your next role, without the noisy third-party repost
 - Includes a Company Nebula market map for exploring sectors and hiring density.
 - Lets users onboard a company by name/website and preview its live roles before submission.
 - Supports optional personalization from pasted résumé text without storing the résumé.
-- Tracks applied roles locally and previews a Gmail-aware update workflow.
+- Tracks applied roles locally, and can port read-only Gmail application updates into a personal applied-company bulletin.
 
 ## Quick start
 
@@ -159,7 +159,7 @@ GOOGLE_CLIENT_SECRET=
 GMAIL_COOKIE_SECRET=at-least-32-characters
 ```
 
-These are optional for local browsing/search. Without them, the Gmail drawer shows setup-needed copy; all job search, company views, and Company Nebula still work.
+These are optional for local browsing/search. Without them, the Gmail drawer explains the bring-your-own-OAuth setup; all job search, company views, and Company Nebula still work.
 
 Google OAuth redirect URI:
 
@@ -167,7 +167,13 @@ Google OAuth redirect URI:
 https://YOUR_SITE_DOMAIN/api/gmail/callback
 ```
 
-The app stores the Gmail refresh token in an encrypted HttpOnly cookie for the demo implementation. A hardened public release should move refresh tokens to durable per-user storage, complete Google OAuth app verification, show previews before import, store only minimal metadata, and provide disconnect/delete controls.
+For local testing, use:
+
+```text
+http://localhost:3000/api/gmail/callback
+```
+
+Detected Gmail updates can be imported into the local Applied tab with `Add to applied`, where they are grouped by company alongside roles marked from Launchpad. The app stores the Gmail refresh token in an encrypted HttpOnly cookie for the demo implementation. A hardened public release should move refresh tokens to durable per-user storage, complete Google OAuth app verification, show previews before import, store only minimal metadata, and provide disconnect/delete controls.
 
 ## Security and privacy model
 

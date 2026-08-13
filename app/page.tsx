@@ -40,6 +40,13 @@ type AppliedRecord = {
   status: "Applied" | "Assessment" | "Interview" | "Offer" | "Rejected" | "Withdrawn";
   appliedAt: string;
   notes: string;
+  company?: string;
+  title?: string;
+  source?: "job" | "gmail";
+  emailSubject?: string;
+  emailFrom?: string;
+  emailDate?: string;
+  emailUrl?: string;
 };
 type GmailStatus = { configured: boolean; missing: string[]; connected: boolean; email: string | null; connectedAt: string | null };
 type GmailUpdate = {
@@ -307,6 +314,18 @@ export default function Home() {
   }, [searchDraft]);
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const gmailState = params.get("gmail");
+    if (gmailState === "error") {
+      setShowGmail(true);
+      setGmailError(params.get("message") || "Gmail connection failed.");
+    } else if (gmailState === "connected") {
+      setShowGmail(true);
+      setGmailError("");
+    }
+  }, []);
+
+  useEffect(() => {
     setSpecialization("All specializations");
   }, [mode]);
 
@@ -355,9 +374,61 @@ export default function Home() {
     setApplied((records) => {
       const next = { ...records };
       if (next[job.id]) delete next[job.id];
-      else next[job.id] = { jobId: job.id, status: "Applied", appliedAt: new Date().toISOString(), notes: "" };
+      else next[job.id] = { jobId: job.id, status: "Applied", appliedAt: new Date().toISOString(), notes: "", company: job.company, title: job.title, source: "job" };
       return next;
     });
+  }
+
+  function importGmailUpdate(update: GmailUpdate) {
+    const key = `gmail-${update.id}`;
+    const parsedDate = update.date ? new Date(update.date) : new Date();
+    const appliedAt = Number.isNaN(parsedDate.getTime()) ? new Date().toISOString() : parsedDate.toISOString();
+    setApplied((records) => ({
+      ...records,
+      [key]: {
+        jobId: key,
+        status: update.status,
+        appliedAt,
+        notes: update.snippet,
+        company: cleanDisplayText(update.company),
+        title: cleanDisplayText(update.role),
+        source: "gmail",
+        emailSubject: cleanDisplayText(update.subject),
+        emailFrom: cleanDisplayText(update.from),
+        emailDate: update.date,
+        emailUrl: update.sourceUrl,
+      },
+    }));
+    setView("applied");
+  }
+
+  function importVisibleGmailUpdates() {
+    if (!gmailUpdates.length) return;
+    const importedAt = new Date().toISOString();
+    setApplied((records) => {
+      const next = { ...records };
+      for (const update of gmailUpdates) {
+        const key = `gmail-${update.id}`;
+        const parsedDate = update.date ? new Date(update.date) : new Date(importedAt);
+        const appliedAt = Number.isNaN(parsedDate.getTime()) ? importedAt : parsedDate.toISOString();
+        next[key] = {
+          jobId: key,
+          status: update.status,
+          appliedAt,
+          notes: update.snippet,
+          company: cleanDisplayText(update.company),
+          title: cleanDisplayText(update.role),
+          source: "gmail",
+          emailSubject: cleanDisplayText(update.subject),
+          emailFrom: cleanDisplayText(update.from),
+          emailDate: update.date,
+          emailUrl: update.sourceUrl,
+        };
+      }
+      return next;
+    });
+    setShowGmail(false);
+    setView("applied");
   }
 
   async function scanGmail() {
@@ -436,6 +507,15 @@ export default function Home() {
   const sectors = ["All sectors", ...Array.from(sectorCounts.keys()).sort()];
   const sizes = ["All sizes", "Startup", "Small", "Medium", "Large", "Enterprise", "Unknown"];
   const appliedJobs = scopedJobs.filter((job) => applied[job.id]);
+  const appliedRows = useMemo(() => Object.values(applied).sort((a, b) => new Date(b.appliedAt).getTime() - new Date(a.appliedAt).getTime()), [applied]);
+  const appliedCompanyGroups = useMemo(() => Array.from(appliedRows.reduce((groups, record) => {
+    const company = cleanDisplayText(record.company || "Unknown company");
+    const group = groups.get(company) || { company, total: 0, statuses: new Map<AppliedRecord["status"], number>() };
+    group.total += 1;
+    group.statuses.set(record.status, (group.statuses.get(record.status) || 0) + 1);
+    groups.set(company, group);
+    return groups;
+  }, new Map<string, { company: string; total: number; statuses: Map<AppliedRecord["status"], number> }>()).values()).sort((a, b) => b.total - a.total || a.company.localeCompare(b.company)), [appliedRows]);
   const sizeCount = (label: string) => label === "All sizes" ? scopedJobs.length : sizeCounts.get(label) || 0;
   const discoverySeedJobs = scopedJobs.filter((job) => /engineer|manager|analyst|specialist|associate|designer|scientist|account|support|product/i.test(job.title)).slice(0, 8);
   const emailPreviewSource = gmailMode === "applied" ? appliedJobs : discoverySeedJobs;
@@ -527,7 +607,7 @@ export default function Home() {
       <header className="topbar">
         <a className="brand" href="#top"><span className="brandMark">L</span><span>Launchpad</span></a>
         <div className="fresh"><span></span> Official company career feeds</div>
-        <div className="headerActions"><button className="ghost" onClick={() => setShowNebula(true)}>Company Nebula</button><button className="ghost" onClick={() => setShowGmail(true)}>Link Gmail</button><button className="ghost" onClick={() => setShowOnboard(true)}>+ Add company</button></div>
+        <div className="headerActions"><button className="ghost" onClick={() => setShowNebula(true)}>Company Nebula</button><button className="ghost" onClick={() => setView("applied")}>Applied list</button><button className="ghost" onClick={() => setShowGmail(true)}>Link Gmail</button><button className="ghost" onClick={() => setShowOnboard(true)}>+ Add company</button></div>
       </header>
 
       <section className="hero" id="top">
@@ -580,7 +660,7 @@ export default function Home() {
           </div>
 
           <div className="resultHead">
-            <div><p className="label">OFFICIAL CAREERS RESULTS</p><h2>{view === "roles" ? `${filtered.length} roles found` : view === "companies" ? `${companyGroups.length} companies hiring` : view === "applied" ? `${appliedJobs.length} applied roles` : view === "audit" ? "Source audit & coverage" : `${registryFiltered.length} tracked companies shown`}</h2></div>
+            <div><p className="label">OFFICIAL CAREERS RESULTS</p><h2>{view === "roles" ? `${filtered.length} roles found` : view === "companies" ? `${companyGroups.length} companies hiring` : view === "applied" ? `${appliedRows.length} applied roles` : view === "audit" ? "Source audit & coverage" : `${registryFiltered.length} tracked companies shown`}</h2></div>
             <div className="controls">
               <label className="toggle"><input type="checkbox" checked={remoteOnly} onChange={(e) => setRemoteOnly(e.target.checked)} /><span></span>Remote only</label>
               <label className="toggle"><input type="checkbox" checked={includeInternational} onChange={(e) => { setIncludeInternational(e.target.checked); setVisible(30); }} /><span></span>Include international</label>
@@ -601,8 +681,9 @@ export default function Home() {
 
           {view === "applied" && <div className="appliedPanel">
             <div className="gmailCta"><div><p className="label">OPTIONAL EMAIL SYNC</p><h3>Track application updates from Gmail</h3><span>Choose a lookback window, preview detected application emails, then import status changes.</span></div><button className="ghost" onClick={() => setShowGmail(true)}>Connect / import</button></div>
-            {appliedJobs.map((job) => <article className="appliedRow" key={job.id}><div><b>{job.title}</b><span>{job.company} · marked {fmtDate(applied[job.id].appliedAt)}</span></div><select value={applied[job.id].status} onChange={(e) => setApplied((records) => ({ ...records, [job.id]: { ...records[job.id], status: e.target.value as AppliedRecord["status"] } }))}>{statusOptions.map((option) => <option key={option}>{option}</option>)}</select><a href={job.url} target="_blank" rel="noreferrer">Open</a></article>)}
-            {!appliedJobs.length && <div className="empty"><b>No applied roles yet.</b><p>Check a role as applied and it will appear here.</p></div>}
+            {appliedRows.length > 0 && <div className="appliedSummary"><div><p className="label">APPLICATION BULLETIN</p><h3>{appliedCompanyGroups.length} companies applied to</h3><span>{appliedRows.filter((record) => record.source === "gmail").length} imported from Gmail · {appliedRows.filter((record) => record.source !== "gmail").length} marked from Launchpad</span></div>{appliedCompanyGroups.slice(0, 8).map((group) => <div key={group.company}><b>{group.company}</b><span>{group.total} role{group.total === 1 ? "" : "s"} · {Array.from(group.statuses.entries()).map(([status, count]) => `${count} ${status}`).join(" · ")}</span></div>)}</div>}
+            {appliedRows.map((record) => <article className="appliedRow" key={record.jobId}><div><b>{cleanDisplayText(record.title || "Role not parsed")}</b><span>{cleanDisplayText(record.company || "Unknown company")} · marked {fmtDate(record.appliedAt)} · {record.source === "gmail" ? "Gmail import" : "Launchpad role"}</span>{record.emailSubject && <small>{record.emailSubject}</small>}</div><select value={record.status} onChange={(e) => setApplied((records) => ({ ...records, [record.jobId]: { ...records[record.jobId], status: e.target.value as AppliedRecord["status"] } }))}>{statusOptions.map((option) => <option key={option}>{option}</option>)}</select><div className="appliedLinks">{record.emailUrl && <a href={record.emailUrl} target="_blank" rel="noreferrer">Email</a>}{!record.emailUrl && appliedJobs.find((job) => job.id === record.jobId)?.url && <a href={appliedJobs.find((job) => job.id === record.jobId)?.url} target="_blank" rel="noreferrer">Open</a>}<button onClick={() => setApplied((records) => { const next = { ...records }; delete next[record.jobId]; return next; })}>Remove</button></div></article>)}
+            {!appliedRows.length && <div className="empty"><b>No applied roles yet.</b><p>Check a role as applied or import applications from Gmail and they will appear here.</p></div>}
           </div>}
 
           {view === "audit" && <div className="auditPanel">
@@ -623,7 +704,7 @@ export default function Home() {
 
       {showTune && <div className="drawerBackdrop" onClick={() => setShowTune(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowTune(false)}>×</button><p className="eyebrow">OPTIONAL · USER CONTROLLED</p><h2>Tune the noise out.</h2><p>Paste résumé text for suggested interest areas. Nothing is stored, and every suggestion can be ignored or replaced with your own.</p><form onSubmit={analyzePreferences}><label>Résumé text<textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} placeholder="Paste résumé text here..." /></label><button className="apply">Suggest interest areas</button></form>{suggestions.length > 0 && <div className="suggestions"><p className="label">SUGGESTED - CHOOSE ANY</p>{suggestions.map((s) => <button key={s.id} className={preferences.includes(s.label) ? "chosen" : ""} onClick={() => addPreference(s.label)}><b>{s.label}</b><span>{s.signals.join(" · ")}</span><em>{preferences.includes(s.label) ? "Added" : "+ Add"}</em></button>)}</div>}<div className="customPref"><input value={customPreference} onChange={(e) => setCustomPreference(e.target.value)} placeholder="Create your own interest..." /><button onClick={() => { if (customPreference.trim()) { addPreference(customPreference.trim()); setCustomPreference(""); } }}>Add</button></div><small>Interests now affect filters when Use interests is on. Résumé text is analyzed transiently and is not saved.</small></section></div>}
 
-      {showGmail && <div className="drawerBackdrop" onClick={() => setShowGmail(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowGmail(false)}>×</button><p className="eyebrow">OPTIONAL GMAIL SYNC</p><h2>Email-aware tracking.</h2><p>Connect Gmail with Google OAuth read-only access. Real imported rows show sender, subject, date, and an open-email link. If OAuth is not configured, Launchpad keeps demo rows clearly separated.</p>{gmailStatus?.connected ? <div className="gmailTruth real">Connected to {gmailStatus.email ?? "Gmail"} · read-only</div> : <div className="gmailTruth">{gmailStatus?.configured ? "Gmail is ready · connect to scan your inbox" : "Gmail connection is waiting on admin setup"}</div>}<div className="gmailModeTabs"><button className={gmailMode === "all" ? "active" : ""} onClick={() => { setGmailMode("all"); setGmailScanned(false); }}>All Gmail updates</button><button className={gmailMode === "applied" ? "active" : ""} onClick={() => { setGmailMode("applied"); setGmailScanned(false); }}>Matched to applied</button></div><div className="gmailControls"><label>Look back<select value={gmailDays} onChange={(e) => { setGmailDays(e.target.value); setGmailScanned(false); }}><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option></select></label>{gmailStatus?.connected ? <button className="apply" onClick={scanGmail} disabled={gmailLoading}>{gmailLoading ? "Scanning Gmail..." : "Scan real Gmail"}</button> : gmailStatus?.configured ? <a className="apply" href="/api/gmail/auth">Connect Gmail with Google →</a> : <button className="apply" disabled>Admin setup needed</button>}</div>{gmailStatus?.connected && <button className="ghost disconnectGmail" onClick={disconnectGmail}>Disconnect Gmail</button>}{gmailError && <div className="discoveryError">{gmailError}</div>}<div className="gmailMock"><div><b>Read-only scope</b><span>Gmail metadata, sender, subject, snippets, and source links. No send, archive, trash, or label access.</span></div><div><b>Matching strategy</b><span>{gmailMode === "all" ? "Searches recent application-looking messages in Gmail." : "Searches Gmail for companies and roles you marked as applied."}</span></div></div>{gmailScanned && <div className="emailResults"><p className="label">{gmailStatus?.connected ? "REAL GMAIL" : "DEMO PREVIEW"} · LAST {gmailDays} DAYS · {gmailMode === "all" ? "ALL UPDATES" : "MATCHED ONLY"}</p>{gmailStatus?.connected ? (gmailUpdates.length ? gmailUpdates.map((update) => <article key={update.id}><div><b>{update.signal}</b><span>{update.company} · {update.role}</span><div className="emailSource"><span>{update.subject}</span><span>{update.from}</span><span>{update.date}</span></div><div className="emailBadges"><em>Gmail source</em><em>{update.confidence} confidence</em></div></div><a href={update.sourceUrl} target="_blank" rel="noreferrer">Open email ↗</a></article>) : <div className="empty smallEmpty"><b>No Gmail updates found.</b><p>Try a longer lookback window or switch scan mode.</p></div>) : (mockEmailUpdates.length ? mockEmailUpdates.map(({ job, status, signal, confidence, matched }) => <article key={job.id}><div><b>{signal}</b><span>{job.company} · {job.title}</span><div className="emailBadges"><em>Demo row</em><em>{confidence} match confidence</em><em>{matched ? "Already applied" : "Not marked applied"}</em></div></div><button onClick={() => setApplied((records) => ({ ...records, [job.id]: { ...(records[job.id] || { jobId: job.id, appliedAt: new Date().toISOString(), notes: "" }), status: status as AppliedRecord["status"] } }))}>Simulate {status}</button></article>) : <div className="empty smallEmpty"><b>No demo matches in this window.</b><p>Connect Gmail to scan real application updates.</p></div>)}</div>}<small>OAuth tokens are stored in an encrypted HttpOnly cookie for this demo. A hardened public release should move refresh tokens to durable per-user storage and complete Google verification.</small></section></div>}
+      {showGmail && <div className="drawerBackdrop" onClick={() => setShowGmail(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowGmail(false)}>×</button><p className="eyebrow">OPTIONAL GMAIL SYNC</p><h2>Email-aware tracking.</h2><p>Scan recent read-only Gmail messages, then port real application confirmations and updates into your local applied-role bulletin.</p>{gmailStatus?.connected ? <div className="gmailTruth real">Connected to {gmailStatus.email ?? "Gmail"} · read-only</div> : <div className="gmailTruth">{gmailStatus?.configured ? "Gmail is ready · connect to scan your inbox" : "Bring your own Google OAuth keys to enable Gmail locally"}</div>}{!gmailStatus?.connected && !gmailStatus?.configured && <div className="gmailSetup"><b>Optional local setup</b><span>Add GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, and GMAIL_COOKIE_SECRET to your local env. Redirect URI: {typeof window !== "undefined" ? `${window.location.origin}/api/gmail/callback` : "/api/gmail/callback"}</span></div>}<div className="gmailModeTabs"><button className={gmailMode === "all" ? "active" : ""} onClick={() => { setGmailMode("all"); setGmailScanned(false); }}>All Gmail updates</button><button className={gmailMode === "applied" ? "active" : ""} onClick={() => { setGmailMode("applied"); setGmailScanned(false); }}>Matched to applied</button></div><div className="gmailControls"><label>Look back<select value={gmailDays} onChange={(e) => { setGmailDays(e.target.value); setGmailScanned(false); }}><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option></select></label>{gmailStatus?.connected ? <button className="apply" onClick={scanGmail} disabled={gmailLoading}>{gmailLoading ? "Scanning Gmail..." : "Scan real Gmail"}</button> : gmailStatus?.configured ? <a className="apply" href="/api/gmail/auth">Connect Gmail with Google →</a> : <button className="apply" disabled>OAuth keys needed</button>}</div>{gmailStatus?.connected && <button className="ghost disconnectGmail" onClick={disconnectGmail}>Disconnect Gmail</button>}{gmailError && <div className="discoveryError">{gmailError}</div>}<div className="gmailMock"><div><b>Read-only scope</b><span>Gmail metadata, sender, subject, snippets, and source links. No send, archive, trash, or label access.</span></div><div><b>Personal bulletin</b><span>{gmailMode === "all" ? "Import any application-looking email into Applied." : "Searches Gmail for companies and roles you already marked as applied."}</span></div></div>{gmailStatus?.connected && gmailScanned && gmailUpdates.length > 0 && <div className="gmailImportBar"><div><b>{gmailUpdates.length} Gmail updates ready</b><span>Port the visible scan into your local Applied list, then review by company.</span></div><button onClick={importVisibleGmailUpdates}>Add all visible to applied</button></div>}{gmailScanned && <div className="emailResults"><p className="label">{gmailStatus?.connected ? "REAL GMAIL" : "DEMO PREVIEW"} · LAST {gmailDays} DAYS · {gmailMode === "all" ? "ALL UPDATES" : "MATCHED ONLY"}</p>{gmailStatus?.connected ? (gmailUpdates.length ? gmailUpdates.map((update) => <article key={update.id}><div><b>{update.signal}</b><span>{update.company} · {update.role}</span><div className="emailSource"><span>{update.subject}</span><span>{update.from}</span><span>{update.date}</span></div><div className="emailBadges"><em>Gmail source</em><em>{update.confidence} confidence</em><em>{applied[`gmail-${update.id}`] ? "In applied" : "Not imported"}</em></div></div><div className="emailActions"><button onClick={() => importGmailUpdate(update)}>{applied[`gmail-${update.id}`] ? "Update applied" : "Add to applied"}</button><a href={update.sourceUrl} target="_blank" rel="noreferrer">Open email ↗</a></div></article>) : <div className="empty smallEmpty"><b>No Gmail updates found.</b><p>Try a longer lookback window or switch scan mode.</p></div>) : (mockEmailUpdates.length ? mockEmailUpdates.map(({ job, status, signal, confidence, matched }) => <article key={job.id}><div><b>{signal}</b><span>{job.company} · {job.title}</span><div className="emailBadges"><em>Demo row</em><em>{confidence} match confidence</em><em>{matched ? "Already applied" : "Not marked applied"}</em></div></div><button onClick={() => setApplied((records) => ({ ...records, [job.id]: { ...(records[job.id] || { jobId: job.id, appliedAt: new Date().toISOString(), notes: "", company: job.company, title: job.title, source: "job" }), status: status as AppliedRecord["status"] } }))}>Simulate {status}</button></article>) : <div className="empty smallEmpty"><b>No demo matches in this window.</b><p>Connect Gmail to scan real application updates.</p></div>)}</div>}<small>OAuth tokens are stored in an encrypted HttpOnly cookie for this demo. A hardened public release should move refresh tokens to durable per-user storage and complete Google verification.</small></section></div>}
       {showNebula && <div className="marketOverlay"><button className="nebulaClose" onClick={() => setShowNebula(false)}>×</button><section className="marketShell">
         <header className="marketChrome"><div><p className="eyebrow">{includeInternational ? "GLOBAL MARKET GRAPH" : "US MARKET GRAPH"}</p><h2>Company Nebula</h2><p>Explore {includeInternational ? "global" : "US"} hiring as a recursive market graph: industries lead to companies, companies open into work signals, and signals resolve into the actual roles behind them.</p></div><div className="marketStats"><span>{nebulaSectors.length} industries</span><span>{scopedCompanyTotal} hiring companies</span><span>{scopedJobTotal} roles</span></div></header>
         <div className="marketToolbar"><div><button className={nebulaClarity === "markets" ? "active" : ""} onClick={() => setNebulaClarity("markets")}>Markets</button><button className={nebulaClarity === "selection" ? "active" : ""} onClick={() => setNebulaClarity("selection")}>Selection</button><button className={nebulaClarity === "all" ? "active" : ""} onClick={() => setNebulaClarity("all")}>All nodes</button></div><label>Rotate<input type="range" min="-55" max="55" value={nebulaRotation} onChange={(e) => setNebulaRotation(Number(e.target.value))} /></label><label>Tilt<input type="range" min="42" max="76" value={nebulaTilt} onChange={(e) => setNebulaTilt(Number(e.target.value))} /></label><label>Zoom<input type="range" min="0.75" max="1.35" step="0.05" value={nebulaZoom} onChange={(e) => setNebulaZoom(Number(e.target.value))} /></label></div>

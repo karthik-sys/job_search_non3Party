@@ -64,6 +64,11 @@ export function redirectUri(req: NextRequest) {
   return `${new URL(req.url).origin}/api/gmail/callback`;
 }
 
+function secureCookie(req: NextRequest) {
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+  return forwardedProto === "https" || new URL(req.url).protocol === "https:";
+}
+
 export function gmailAuthUrl(req: NextRequest, state: string) {
   const { clientId } = getConfig();
   const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
@@ -77,10 +82,10 @@ export function gmailAuthUrl(req: NextRequest, state: string) {
   return url;
 }
 
-export function setStateCookie(res: NextResponse, state: string) {
+export function setStateCookie(req: NextRequest, res: NextResponse, state: string) {
   res.cookies.set(STATE_COOKIE, state, {
     httpOnly: true,
-    secure: true,
+    secure: secureCookie(req),
     sameSite: "lax",
     path: "/",
     maxAge: 10 * 60,
@@ -97,10 +102,10 @@ export function clearGmailCookies(res: NextResponse) {
   res.cookies.set(STATE_COOKIE, "", { path: "/", maxAge: 0 });
 }
 
-export async function setTokenCookie(res: NextResponse, token: StoredGoogleToken) {
+export async function setTokenCookie(req: NextRequest, res: NextResponse, token: StoredGoogleToken) {
   res.cookies.set(TOKEN_COOKIE, await seal(token), {
     httpOnly: true,
-    secure: true,
+    secure: secureCookie(req),
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 120,
@@ -160,11 +165,11 @@ export async function gmailUpdates(accessToken: string, days: string, mode: stri
   const q = `${base} ${mode === "applied" && scoped ? `(${scoped})` : broad}`;
   const listUrl = new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");
   listUrl.searchParams.set("q", q);
-  listUrl.searchParams.set("maxResults", "20");
+  listUrl.searchParams.set("maxResults", "80");
   const listResponse = await fetch(listUrl, { headers: { authorization: `Bearer ${accessToken}` } });
   const listJson = await listResponse.json() as { messages?: { id: string; threadId: string }[]; error?: { message?: string } };
   if (!listResponse.ok) throw new Error(listJson.error?.message ?? "Gmail search failed.");
-  const messages = await Promise.all((listJson.messages ?? []).slice(0, 12).map(async (message) => {
+  const messages = await Promise.all((listJson.messages ?? []).slice(0, 50).map(async (message) => {
     const url = new URL(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${message.id}`);
     url.searchParams.set("format", "metadata");
     url.searchParams.set("metadataHeaders", "Subject");
@@ -222,7 +227,14 @@ function parseCompany(subject: string, from: string) {
 
 function parseRole(subject: string, snippet: string) {
   const text = `${subject} ${snippet}`;
-  const match = text.match(/(?:for|to the|to our)\s+(?:the\s+)?([^.!?]{4,80}?(?:engineer|manager|analyst|designer|scientist|specialist|associate|lead|intern|role|position))/i);
+  const patterns = [
+    /for the ([^.!?]{4,90}?(?:engineer|manager|analyst|designer|scientist|specialist|associate|lead|intern|architect|developer|consultant|role|position))/i,
+    /for our ([^.!?]{4,90}?(?:engineer|manager|analyst|designer|scientist|specialist|associate|lead|intern|architect|developer|consultant|role|position))/i,
+    /to the ([^.!?]{4,90}?(?:engineer|manager|analyst|designer|scientist|specialist|associate|lead|intern|architect|developer|consultant|role|position))/i,
+    /applied to ([^.!?]{4,90}?(?:engineer|manager|analyst|designer|scientist|specialist|associate|lead|intern|architect|developer|consultant|role|position))/i,
+    /application for ([^.!?]{4,90}?(?:engineer|manager|analyst|designer|scientist|specialist|associate|lead|intern|architect|developer|consultant|role|position))/i,
+  ];
+  const match = patterns.map((pattern) => text.match(pattern)).find(Boolean);
   return match?.[1]?.trim() ?? "Role not parsed";
 }
 
