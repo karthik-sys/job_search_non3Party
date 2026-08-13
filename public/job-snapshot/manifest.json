@@ -1,12 +1,13 @@
 {
   "encoding": "gzip",
+  "generatedAt": "2026-08-13T18:47:49.250Z",
+  "jobs": 36336,
   "parts": [
     "part-001.json.gz",
     "part-002.json.gz",
     "part-003.json.gz",
     "part-004.json.gz"
   ],
-  "bytes": 2869405,
-  "sourceBytes": 30272481,
-  "generatedAt": "2026-08-13T18:42:05.117Z"
+  "bytes": 2714733,
+  "sourceBytes": 28766888
 }

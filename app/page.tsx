@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { useDeferredValue, useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import registry from "./company-registry-preview.json";
 import registrySummary from "./company-registry-summary.json";
 import feedSummary from "./job-feed-summary.json";
@@ -23,6 +23,15 @@ type Job = {
   url: string;
   summary: string;
   companyEvidence: string;
+  searchIndex?: {
+    title: string;
+    category: string;
+    tags: string;
+    company: string;
+    context: string;
+    summary: string;
+    all: string;
+  };
 };
 type Company = (typeof registry)[number];
 type AppliedRecord = {
@@ -72,28 +81,83 @@ const searchSynonyms: Record<string, string[]> = {
   security: ["security", "privacy", "risk", "trust", "compliance"],
   ops: ["operations", "strategy", "logistics", "supply"],
 };
+
+const decodeTextEntities = (value: string) => value
+  .replace(/\\u003c/gi, "<")
+  .replace(/\\u003e/gi, ">")
+  .replace(/\\u0026/gi, "&")
+  .replace(/&lt;/gi, "<")
+  .replace(/&gt;/gi, ">")
+  .replace(/&amp;/gi, "&")
+  .replace(/&nbsp;/gi, " ")
+  .replace(/&quot;/gi, "\"")
+  .replace(/&#39;|&apos;/gi, "'");
+
+const cleanDisplayText = (value = "") => {
+  let text = String(value);
+  for (let i = 0; i < 3; i += 1) {
+    text = decodeTextEntities(text)
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/\b(?:class|style|data-[\w-]+)=["'][^"']*["']/gi, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/<[^>]*$/g, " ");
+  }
+  return text
+    .replace(/<\/?[a-z][^>]*>/gi, " ")
+    .replace(/<[^>]*$/g, " ")
+    .replace(/\s+/g, " ")
+    .replace(/\s+([,.;:!?])/g, "$1")
+    .trim();
+};
+
+const cleanJob = (job: Job): Job => ({
+  ...job,
+  source: cleanDisplayText(job.source),
+  company: cleanDisplayText(job.company),
+  companySize: cleanDisplayText(job.companySize),
+  sector: cleanDisplayText(job.sector),
+  title: cleanDisplayText(job.title),
+  category: cleanDisplayText(job.category),
+  location: cleanDisplayText(job.location),
+  type: cleanDisplayText(job.type),
+  level: cleanDisplayText(job.level),
+  salary: cleanDisplayText(job.salary),
+  summary: cleanDisplayText(job.summary),
+  companyEvidence: cleanDisplayText(job.companyEvidence),
+  tags: job.tags.map((tag) => cleanDisplayText(tag)).filter(Boolean),
+});
+
 const normalizeSearch = (value: string) => value.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9+#.]+/g, " ").replace(/\s+/g, " ").trim();
+const withSearchIndex = (job: Job): Job => {
+  const title = normalizeSearch(job.title);
+  const category = normalizeSearch(job.category);
+  const tags = normalizeSearch(job.tags.join(" "));
+  const company = normalizeSearch(job.company);
+  const context = normalizeSearch(`${job.sector} ${job.companySize} ${job.location}`);
+  const summary = normalizeSearch(job.summary);
+  return { ...job, searchIndex: { title, category, tags, company, context, summary, all: `${title} ${category} ${tags} ${company} ${context} ${summary}` } };
+};
 const searchTerms = (value: string) => {
   const base = normalizeSearch(value).split(" ").filter((term) => term && term !== "and" && term.length > 1);
   return Array.from(new Set(base.flatMap((term) => [term, ...(searchSynonyms[term] || [])])));
 };
-const fieldScore = (field: string, terms: string[], weight: number) => {
-  const text = normalizeSearch(field);
+const fieldScore = (text: string, terms: string[], weight: number) => {
   return terms.reduce((score, term) => score + (text.includes(term) ? weight : 0), 0);
 };
 const relevanceScore = (job: Job, query: string) => {
   const terms = searchTerms(query);
   if (!terms.length) return 1;
+  const search = job.searchIndex ?? withSearchIndex(job).searchIndex!;
   const score =
-    fieldScore(job.title, terms, 12) +
-    fieldScore(job.category, terms, 10) +
-    fieldScore(job.tags.join(" "), terms, 8) +
-    fieldScore(job.company, terms, 6) +
-    fieldScore(`${job.sector} ${job.companySize} ${job.location}`, terms, 4) +
-    fieldScore(job.summary, terms, 2);
+    fieldScore(search.title, terms, 12) +
+    fieldScore(search.category, terms, 10) +
+    fieldScore(search.tags, terms, 8) +
+    fieldScore(search.company, terms, 6) +
+    fieldScore(search.context, terms, 4) +
+    fieldScore(search.summary, terms, 2);
   const required = normalizeSearch(query).split(" ").filter((term) => term && term !== "and" && term.length > 1);
-  const text = normalizeSearch(`${job.title} ${job.category} ${job.tags.join(" ")} ${job.company} ${job.sector} ${job.summary}`);
-  const requiredHits = required.filter((term) => text.includes(term) || (searchSynonyms[term] || []).some((alt) => text.includes(alt))).length;
+  const requiredHits = required.filter((term) => search.all.includes(term) || (searchSynonyms[term] || []).some((alt) => search.all.includes(alt))).length;
   const total = score + requiredHits * 5;
   if (required.length && requiredHits < required.length) return 0;
   if (required.length > 1 && total < 45) return 0;
@@ -125,6 +189,7 @@ const contributionTags = (companyJobs: Job[], limit = 5) => {
 
 export default function Home() {
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [source, setSource] = useState("All sources");
   const [sector, setSector] = useState("All sectors");
@@ -171,7 +236,7 @@ export default function Home() {
     async function loadJobs() {
       const plain = await fetch("/jobs-data.json").then((response) => response.json()).catch(() => []);
       if (Array.isArray(plain) && plain.length) {
-        setJobs(plain);
+        setJobs(plain.map(cleanJob).map(withSearchIndex));
         return;
       }
       if (!("DecompressionStream" in window)) throw new Error("Compressed job snapshot requires DecompressionStream.");
@@ -180,7 +245,7 @@ export default function Home() {
       const compressed = new Blob(chunks);
       const stream = compressed.stream().pipeThrough(new DecompressionStream(manifest.encoding));
       const text = await new Response(stream).text();
-      setJobs(JSON.parse(text));
+      setJobs(JSON.parse(text).map(cleanJob).map(withSearchIndex));
     }
     loadJobs().catch(() => setJobs([]));
   }, []);
@@ -290,7 +355,7 @@ export default function Home() {
   }));
 
   const filtered = useMemo(() => {
-    const q = query.trim();
+    const q = deferredQuery.trim();
     const result = jobs.map((j) => ({ job: j, score: relevanceScore(j, q) })).filter(({ job, score }) => {
       return (!q || score > 0) && (source === "All sources" || job.source === source) && (sector === "All sectors" || job.sector === sector) && (size === "All sizes" || job.companySize === size) && (!remoteOnly || job.remote) && (mode === "All roles" || job.category === mode) && (!interestOnly || matchesInterest(job, preferences));
     });
@@ -299,7 +364,7 @@ export default function Home() {
     if (sort === "Company") return [...plain].sort((a, b) => a.company.localeCompare(b.company));
     if (sort === "Role family") return [...plain].sort((a, b) => a.category.localeCompare(b.category));
     return plain;
-  }, [jobs, query, source, sector, size, remoteOnly, mode, sort, interestOnly, preferences]);
+  }, [jobs, deferredQuery, source, sector, size, remoteOnly, mode, sort, interestOnly, preferences]);
 
   const companyGroups = useMemo(() => Array.from(new Set(filtered.map((j) => j.company))).map((company) => {
     const companyJobs = filtered.filter((j) => j.company === company);
@@ -436,7 +501,7 @@ export default function Home() {
         </div>
       </section>
 
-      {selected && <div className="drawerBackdrop" onClick={() => setSelected(null)}><aside className="drawer" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setSelected(null)}>×</button><span className="category">{selected.category}</span> <span className="source">{selected.source}</span><h2>{selected.title}</h2><h3>{selected.company}</h3><div className="drawerMeta"><span>⌖ {selected.location}</span><span>{selected.remote ? "Remote" : "On-site / hybrid"}</span><span>{fmtDate(selected.date)}</span></div><p className="hqEvidence"><b>Source verification:</b> {selected.companyEvidence}</p><p>{selected.summary}</p><div className="chips">{selected.tags.slice(0, 8).map((t, i) => <span key={`${t}-${i}`}>{t}</span>)}</div><button className="apply" onClick={() => toggleApplied(selected)}>{applied[selected.id] ? "Remove from applied" : "Mark as applied"}</button><a className="apply secondaryApply" href={selected.url} target="_blank" rel="noreferrer">View original listing ↗</a><small>Personalization is optional. Results remain official-company listings and are not résumé match scores.</small></aside></div>}
+      {selected && <div className="drawerBackdrop" onClick={() => setSelected(null)}><aside className="drawer" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setSelected(null)}>×</button><span className="category">{cleanDisplayText(selected.category)}</span> <span className="source">{cleanDisplayText(selected.source)}</span><h2>{cleanDisplayText(selected.title)}</h2><h3>{cleanDisplayText(selected.company)}</h3><div className="drawerMeta"><span>⌖ {cleanDisplayText(selected.location)}</span><span>{selected.remote ? "Remote" : "On-site / hybrid"}</span><span>{fmtDate(selected.date)}</span></div><p className="hqEvidence"><b>Source verification:</b> {cleanDisplayText(selected.companyEvidence)}</p><p>{cleanDisplayText(selected.summary)}</p><div className="chips">{selected.tags.slice(0, 8).map((t, i) => <span key={`${t}-${i}`}>{cleanDisplayText(t)}</span>)}</div><button className="apply" onClick={() => toggleApplied(selected)}>{applied[selected.id] ? "Remove from applied" : "Mark as applied"}</button><a className="apply secondaryApply" href={selected.url} target="_blank" rel="noreferrer">View original listing ↗</a><small>Personalization is optional. Results remain official-company listings and are not résumé match scores.</small></aside></div>}
 
       {showOnboard && <div className="drawerBackdrop" onClick={() => setShowOnboard(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowOnboard(false)}>×</button><p className="eyebrow">CAREERS DISCOVERY ENGINE</p><h2>Onboard any company.</h2><p>Enter a company and its website. Launchpad will inspect the official site, detect its careers system, and preview every live position directly from the source.</p><form onSubmit={discoverCompany}><label>Company name<input required value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="e.g. Linear" /></label><label>Company website <small>recommended</small><input value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} placeholder="e.g. linear.app" /></label><button className="apply" disabled={discovering}>{discovering ? "Scanning official site..." : "Find careers page ->"}</button></form>{discoveryError && <div className="discoveryError">{discoveryError}</div>}{discovery && <div className="discoveryResult"><div className="verified">Official {discovery.provider} feed detected</div><h3>{discovery.company}</h3><p>{discovery.totalJobs} live positions found</p><div className="previewJobs">{discovery.jobs.slice(0, 8).map((j: any) => <a key={j.id} href={j.url} target="_blank" rel="noreferrer"><b>{j.title}</b><span>{j.location}</span></a>)}</div>{discovery.submitted ? <div className="submitted">Company submitted to the tracked registry.</div> : <button className="apply" onClick={submitCompany}>Add company to registry</button>}</div>}</section></div>}
 
@@ -482,7 +547,7 @@ function JobCard({ job, applied, onOpen, onApply }: { job: Job; applied: boolean
   return <article className="job" onClick={onOpen} tabIndex={0} onKeyDown={(e) => e.key === "Enter" && onOpen()}>
     <label className="appliedCheck" onClick={(e) => e.stopPropagation()}><input type="checkbox" checked={applied} onChange={onApply} /><span></span></label>
     <div className="logo">{job.company.slice(0, 1)}</div>
-    <div className="jobMain"><div className="jobTop"><h3>{job.title}</h3><span>{fmtDate(job.date)}</span></div><p className="company">{job.company} <i>·</i> {job.location}</p><p className="summary">{job.summary}</p><div className="chips"><span className="category">{job.category}</span><span className="hq">{job.companySize}</span><span className="hq">{job.sector}</span><span className="source">Official careers</span>{job.remote && <span>Remote</span>}{applied && <span className="appliedChip">Applied</span>}</div></div>
+    <div className="jobMain"><div className="jobTop"><h3>{cleanDisplayText(job.title)}</h3><span>{fmtDate(job.date)}</span></div><p className="company">{cleanDisplayText(job.company)} <i>·</i> {cleanDisplayText(job.location)}</p><p className="summary">{cleanDisplayText(job.summary)}</p><div className="chips"><span className="category">{cleanDisplayText(job.category)}</span><span className="hq">{cleanDisplayText(job.companySize)}</span><span className="hq">{cleanDisplayText(job.sector)}</span><span className="source">Official careers</span>{job.remote && <span>Remote</span>}{applied && <span className="appliedChip">Applied</span>}</div></div>
     <a className="quickApply" aria-label={`Open application for ${job.title}`} href={job.url} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>Apply ↗</a>
   </article>;
 }
