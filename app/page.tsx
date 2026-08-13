@@ -42,9 +42,9 @@ export default function Home() {
       </header>
 
       <section className="hero" id="top">
-        <div className="eyebrow">Engineering opportunity index</div>
+        <div className="eyebrow">United States engineering opportunity index</div>
         <h1>Your next role,<br/><em>without the noise.</em></h1>
-        <p>Software engineering and applied AI openings, gathered from independent job APIs and shaped into one clean search.</p>
+        <p>Software engineering and applied AI openings explicitly based in—or open to candidates in—the United States, gathered from independent job APIs.</p>
         <div className="searchBox">
           <span className="searchIcon">⌕</span>
           <input aria-label="Search jobs" value={query} onChange={e => {setQuery(e.target.value); setVisible(30)}} placeholder="Search titles, skills, companies, locations…" />
@@ -54,13 +54,13 @@ export default function Home() {
           <div><strong>{jobs.length}</strong><span>open roles</span></div>
           <div><strong>{aiCount}</strong><span>AI-focused</span></div>
           <div><strong>{remoteCount}</strong><span>remote</span></div>
-          <div><strong>5</strong><span>live sources</span></div>
+          <div><strong>{new Set(jobs.map(j=>j.source)).size}</strong><span>US sources</span></div>
         </div>
       </section>
 
       <section className="workspace">
         <aside>
-          <p className="label">ROLE FOCUS</p>
+          <p className="label">US JOBS · ROLE FOCUS</p>
           {["All roles","Software engineering","Applied AI"].map(x => <button key={x} className={mode===x?"filter active":"filter"} onClick={()=>{setMode(x);setVisible(30)}}>{x}<span>→</span></button>)}
           <p className="label space">SOURCES</p>
           {sources.map(x => <button key={x} className={source===x?"filter active":"filter"} onClick={()=>{setSource(x);setVisible(30)}}>{x}<span>{x === "All sources" ? jobs.length : jobs.filter(j=>j.source===x).length}</span></button>)}
@@ -88,7 +88,7 @@ export default function Home() {
                   <div className="jobTop"><h3>{job.title}</h3><span>{fmtDate(job.date)}</span></div>
                   <p className="company">{job.company} <i>·</i> {job.location}</p>
                   <p className="summary">{job.summary}</p>
-                  <div className="chips"><span className="source">{job.source}</span>{job.remote&&<span>Remote</span>}{job.level&&<span>{job.level}</span>}{job.type&&<span>{job.type}</span>}{job.tags.slice(0,3).map(t=><span key={t}>{t}</span>)}</div>
+                  <div className="chips"><span className="source">{job.source}</span>{job.remote&&<span>Remote</span>}{job.level&&<span>{job.level}</span>}{job.type&&<span>{job.type}</span>}{job.tags.slice(0,3).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
                 </div>
                 <button aria-label={`View ${job.title}`}>↗</button>
               </article>
@@ -107,10 +107,10 @@ export default function Home() {
           <h3>{selected.company}</h3>
           <div className="drawerMeta"><span>⌖ {selected.location}</span><span>{selected.remote?"Remote":"On-site / hybrid"}</span><span>{fmtDate(selected.date)}</span></div>
           <p>{selected.summary}</p>
-          <div className="chips">{selected.tags.slice(0,8).map(t=><span key={t}>{t}</span>)}</div>
+          <div className="chips">{selected.tags.slice(0,8).map((t,i)=><span key={`${t}-${i}`}>{t}</span>)}</div>
           {selected.salary && <p className="salary">Listed compensation: <b>{selected.salary}</b></p>}
           <a className="apply" href={selected.url} target="_blank" rel="noreferrer">View original listing ↗</a>
-          <small>No résumé matching has been applied. Results are filtered only by role family.</small>
+          <small>No résumé matching has been applied. Results are filtered only by US eligibility and role family.</small>
         </aside>
       </div>}
     </main>
