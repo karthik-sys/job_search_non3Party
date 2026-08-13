@@ -273,14 +273,15 @@ export default function Home() {
     const saved = localStorage.getItem("launchpad-applied");
     if (saved) setApplied(JSON.parse(saved));
     async function loadJobs() {
-      const plain = await fetch("/jobs-data.json").then((response) => response.json()).catch(() => []);
+      const cacheBust = `v=${feedSummary.jobs}-${feedSummary.usJobs ?? 0}`;
+      const plain = await fetch(`/jobs-data.json?${cacheBust}`, { cache: "no-store" }).then((response) => response.json()).catch(() => []);
       if (Array.isArray(plain) && plain.length) {
         setJobs(plain.map(cleanJob).map(withSearchIndex));
         return;
       }
       if (!("DecompressionStream" in window)) throw new Error("Compressed job snapshot requires DecompressionStream.");
-      const manifest = await fetch("/job-snapshot/manifest.json").then((response) => response.json()) as { encoding: "gzip"; parts: string[] };
-      const chunks = await Promise.all(manifest.parts.map((part) => fetch(`/job-snapshot/${part}`).then((response) => response.arrayBuffer())));
+      const manifest = await fetch(`/job-snapshot/manifest.json?${cacheBust}`, { cache: "no-store" }).then((response) => response.json()) as { encoding: "gzip"; parts: string[] };
+      const chunks = await Promise.all(manifest.parts.map((part) => fetch(`/job-snapshot/${part}?${cacheBust}`, { cache: "no-store" }).then((response) => response.arrayBuffer())));
       const compressed = new Blob(chunks);
       const stream = compressed.stream().pipeThrough(new DecompressionStream(manifest.encoding));
       const text = await new Response(stream).text();
@@ -545,9 +546,9 @@ export default function Home() {
       <section className="workspace">
         <aside>
           <p className="label">US JOBS · ROLE FAMILY</p>
-          {roleFamilies.map((x) => <div key={x} className="roleFilterGroup"><button className={mode === x ? "filter active" : "filter"} onClick={() => toggleRoleFamily(x)}>{x}<span>{x === "All roles" ? scopedJobs.length : roleCounts.get(x) || 0}</span></button>{mode === x && x !== "All roles" && <div className="nestedFilters"><p className="label">{x.toUpperCase()} · SPECIALIZATION</p>{specializations.map((specializationLabel) => <button key={specializationLabel} className={specialization === specializationLabel ? "filter active subFilter" : "filter subFilter"} onClick={() => toggleSpecialization(specializationLabel)}>{specializationLabel}<span>{specializationCount(specializationLabel)}</span></button>)}</div>}</div>)}
+          {roleFamilies.map((x) => <div key={x} className="roleFilterGroup"><button className={mode === x ? "filter active" : "filter"} onClick={() => toggleRoleFamily(x)}>{x}<span>{x === "All roles" ? scopedJobTotal : roleCounts.get(x) || 0}</span></button>{mode === x && x !== "All roles" && <div className="nestedFilters"><p className="label">{x.toUpperCase()} · SPECIALIZATION</p>{specializations.map((specializationLabel) => <button key={specializationLabel} className={specialization === specializationLabel ? "filter active subFilter" : "filter subFilter"} onClick={() => toggleSpecialization(specializationLabel)}>{specializationLabel}<span>{specializationCount(specializationLabel)}</span></button>)}</div>}</div>)}
           <p className="label space">COMPANY SIZE · LIVE ROLES</p>
-          {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => toggleSize(x)}>{x}<span>{sizeCount(x)}</span></button>)}
+          {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => toggleSize(x)}>{x}<span>{x === "All sizes" ? scopedJobTotal : sizeCount(x)}</span></button>)}
           <p className="label space">SECTORS</p>
           {sectors.map((x) => <button key={x} className={sector === x ? "filter active" : "filter"} onClick={() => toggleSector(x)}>{x}<span>{x === "All sectors" ? registry.length : registrySectorCounts.get(x) || 0}</span></button>)}
           <div className="fantastic"><div><span className="pulse"></span><b>Coverage model</b></div><p>This is a forkable local index, not a claim about the whole US market. Watchlist: {registrySummary.total} companies. Free feeds checked: {feedSummary.feedsChecked}. Resolved today: {feedSummary.boardsResolved}. US-visible hiring now: {feedSummary.usCompaniesWithMatches ?? scopedCompanyTotal}. Total resolved with international: {feedSummary.companiesWithMatches}.</p></div>
