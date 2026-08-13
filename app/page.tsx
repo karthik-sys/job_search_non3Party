@@ -189,81 +189,23 @@ const contributionTags = (companyJobs: Job[], limit = 5) => {
 
 const roleSpecialization = (job: Job) => {
   const text = `${job.title} ${job.category} ${job.tags.join(" ")} ${job.summary}`.toLowerCase();
-  const family = job.category;
-  const pick = (rules: [string, RegExp][], fallback: string) => rules.find(([, pattern]) => pattern.test(text))?.[0] ?? fallback;
-  if (family === "Software Engineering") return pick([
-    ["Backend / APIs", /back[ -]?end|backend|api|server|microservice|service engineer|distributed|database|storage/],
-    ["Frontend / Web", /front[ -]?end|frontend|react|vue|angular|web engineer|ui engineer|javascript|typescript|design system/],
-    ["Full-stack", /full[ -]?stack|fullstack/],
-    ["Platform / Infrastructure / SRE", /platform|infra|infrastructure|cloud|devops|sre|site reliability|kubernetes|terraform|release|build|developer productivity/],
-    ["Mobile", /mobile|ios|android|react native|swift|kotlin/],
-    ["Data Engineering", /data engineer|analytics engineer|etl|pipeline|warehouse|spark|dbt|data platform/],
-    ["Security Engineering", /security engineer|appsec|application security|detection|threat|identity|privacy|trust/],
-    ["QA / Test Automation", /qa|quality|test engineer|automation engineer|verification|validation|reliability test/],
-    ["Embedded Software", /embedded|firmware|fpga|driver|kernel|sensor|iot|edge/],
-  ], "General Software Engineering");
-  if (family === "Hardware & Robotics") return pick([
-    ["Electrical / Power Systems", /electrical|electronics|power|battery|bess|pcb|circuit|rf|antenna|avionics/],
-    ["Mechanical / Manufacturing", /mechanical|manufacturing|machining|thermal|structural|materials|tooling|cad|construction/],
-    ["Robotics / Autonomy / Controls", /robot|autonomy|controls|motion|perception|navigation|sensor fusion|mechatronics/],
-    ["Embedded / Firmware Hardware", /embedded|firmware|fpga|driver|bringup|hardware software|iot|edge/],
-    ["Hardware Test / Validation", /test|validation|verification|reliability|quality|lab|integration|hilt|sil/],
-    ["Field / Operations Engineering", /field|site|construction|commissioning|maintenance|technician|facilities/],
-  ], "General Hardware & Robotics");
-  if (family === "Machine Learning & AI") return pick([
-    ["Applied ML / AI Product", /applied|product|recommendation|ranking|personalization|search|ads|growth/],
-    ["GenAI / LLM", /llm|generative|genai|prompt|agent|rag|language model|chatbot/],
-    ["Computer Vision / Perception", /computer vision|vision|perception|image|video|lidar|sensor/],
-    ["ML Infrastructure", /ml platform|mlops|inference|training|model serving|feature store|gpu|cuda/],
-    ["Data Science / Analytics", /data scientist|analytics|experiment|statistics|forecast|econometric/],
-    ["Research Science", /research scientist|scientist|researcher|deep learning|reinforcement/],
-  ], "General ML & AI");
-  if (family === "Product & Design") return pick([
-    ["Product Management", /product manager|principal product|group product|roadmap|strategy/],
-    ["Program / Project Management", /program manager|project manager|scrum|delivery|technical program/],
-    ["Product Design / UX", /product design|ux|user experience|interaction|design system/],
-    ["Visual / Brand / Content", /visual|brand|graphic|content design|copy|creative/],
-    ["User Research", /researcher|user research|ux research|insights/],
-  ], "General Product & Design");
-  if (family === "Go-to-Market") return pick([
-    ["Sales / Account Executive", /sales|account executive|enterprise account|commercial|revenue/],
-    ["Solutions / Sales Engineering", /solutions engineer|sales engineer|solution architect|pre[ -]?sales/],
-    ["Customer Success / Account Management", /customer success|account manager|customer growth|renewal/],
-    ["Marketing / Growth", /marketing|growth|demand gen|brand|content|campaign|seo/],
-    ["Partnerships / Business Development", /partnership|business development|alliance|channel/],
-  ], "General Go-to-Market");
-  if (family === "Customer & Support") return pick([
-    ["Technical Support", /technical support|support engineer|product support|troubleshoot|tier/],
-    ["Customer Experience / Care", /customer experience|customer care|customer service|concierge|representative/],
-    ["Implementation / Onboarding", /implementation|onboarding|deployment|professional services/],
-    ["Success Operations", /success operations|support operations|knowledge|enablement/],
-  ], "General Customer & Support");
-  if (family === "Operations") return pick([
-    ["Supply Chain / Logistics", /supply chain|logistics|fulfillment|warehouse|inventory|procurement/],
-    ["Manufacturing / Production", /manufacturing|production|factory|assembly|operations engineer/],
-    ["Strategy / Business Operations", /strategy|business operations|chief of staff|planning|program/],
-    ["Facilities / Workplace", /facilities|workplace|real estate|office/],
-  ], "General Operations");
-  if (family === "People, Finance & Legal") return pick([
-    ["People / Talent / Recruiting", /people|hr|human resources|talent|recruit|sourcer|compensation|benefits/],
-    ["Finance / Accounting", /finance|accounting|controller|fp&a|payroll|tax|treasury|billing/],
-    ["Legal / Compliance", /legal|counsel|attorney|compliance|privacy|policy|contracts/],
-  ], "General People, Finance & Legal");
-  if (family === "Security") return pick([
-    ["Application / Product Security", /appsec|application security|product security|secure code|vulnerability/],
-    ["Detection / Incident Response", /detection|incident|soc|threat|siem|response/],
-    ["Governance / Risk / Compliance", /grc|risk|compliance|audit|governance|policy/],
-    ["Identity / Trust / Privacy", /identity|trust|privacy|iam|access/],
-  ], "General Security");
-  if (family === "Retail & Merchandising") return pick([
-    ["Merchandising / Buying", /merchant|merchandising|buyer|buying|assortment/],
-    ["Planning / Inventory", /planning|inventory|allocation|demand|pricing/],
-    ["Retail Operations", /store|retail operations|ecommerce|category/],
-  ], "General Retail & Merchandising");
-  return pick([
-    ["Management / Leadership", /director|head of|lead|manager|vp|chief/],
-    ["Analyst / Specialist", /analyst|specialist|associate|coordinator/],
-  ], `General ${family}`);
+  if (/embedded|firmware|fpga|hardware|robotics|autonomy|avionics|controls|sensor|iot|edge/.test(text)) return "Embedded, Hardware & Robotics";
+  if (/front[ -]?end|frontend|react|vue|angular|web engineer|ui engineer|javascript|typescript|design system/.test(text)) return "Frontend & Web";
+  if (/back[ -]?end|backend|api|server|distributed|platform|microservice|service engineer/.test(text)) return "Backend & Distributed Systems";
+  if (/full[ -]?stack|fullstack/.test(text)) return "Full-stack";
+  if (/mobile|ios|android|react native|swift|kotlin/.test(text)) return "Mobile";
+  if (/data engineer|analytics engineer|etl|pipeline|warehouse|spark|dbt|data platform/.test(text)) return "Data Engineering";
+  if (/machine learning| ml | ai |artificial intelligence|llm|model|research scientist|applied scientist|computer vision|nlp/.test(` ${text} `)) return "Machine Learning & AI";
+  if (/infra|infrastructure|cloud|devops|sre|site reliability|kubernetes|terraform|release|build|developer productivity/.test(text)) return "Infrastructure, DevOps & SRE";
+  if (/security engineer|appsec|application security|detection|threat|identity|privacy|trust/.test(text)) return "Security Engineering";
+  if (/qa|quality|test engineer|automation engineer|verification|validation|reliability test/.test(text)) return "QA, Test & Validation";
+  if (/product manager|program manager|project manager|scrum|roadmap/.test(text)) return "Product & Program";
+  if (/designer|design|ux|user experience|visual|brand|content design|researcher/.test(text)) return "Design & Research";
+  if (/sales|account executive|revenue|business development|customer success|solutions|pre[ -]?sales/.test(text)) return "Sales, Success & Solutions";
+  if (/support|customer experience|customer care|help|technical support|implementation/.test(text)) return "Support & Implementation";
+  if (/operations|supply|logistics|manufacturing|procurement|warehouse|facilities/.test(text)) return "Operations & Supply Chain";
+  if (/finance|accounting|legal|people|hr|recruit|talent|payroll|counsel/.test(text)) return "Business Operations";
+  return "General / Other";
 };
 
 export default function Home() {
@@ -543,7 +485,8 @@ export default function Home() {
       <section className="workspace">
         <aside>
           <p className="label">US JOBS · ROLE FAMILY</p>
-          {roleFamilies.map((x) => <div key={x} className="roleFamilyBlock"><button className={mode === x ? "filter active" : "filter"} onClick={() => { setMode(x); setVisible(30); }}>{x}<span>{x === "All roles" ? jobs.length : jobs.filter((j) => j.category === x).length}</span></button>{mode === x && x !== "All roles" && <div className="nestedFilters"><p className="label">{x.toUpperCase()} · SPECIALIZATION</p>{specializations.map((child) => <button key={child} className={specialization === child ? "filter active subFilter" : "filter subFilter"} onClick={() => { setSpecialization(child); setVisible(30); }}>{child}<span>{specializationCount(child)}</span></button>)}</div>}</div>)}
+          {roleFamilies.map((x) => <button key={x} className={mode === x ? "filter active" : "filter"} onClick={() => { setMode(x); setVisible(30); }}>{x}<span>{x === "All roles" ? jobs.length : jobs.filter((j) => j.category === x).length}</span></button>)}
+          {mode !== "All roles" && <div className="nestedFilters"><p className="label space">{mode.toUpperCase()} · SPECIALIZATION</p>{specializations.map((x) => <button key={x} className={specialization === x ? "filter active subFilter" : "filter subFilter"} onClick={() => { setSpecialization(x); setVisible(30); }}>{x}<span>{specializationCount(x)}</span></button>)}</div>}
           <p className="label space">COMPANY SIZE · LIVE ROLES</p>
           {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => setSize(x)}>{x}<span>{sizeCount(x)}</span></button>)}
           <p className="label space">SECTORS</p>
