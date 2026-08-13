@@ -187,6 +187,27 @@ const contributionTags = (companyJobs: Job[], limit = 5) => {
   return Array.from(counts.entries()).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, limit).map(([tag]) => tag);
 };
 
+const roleSpecialization = (job: Job) => {
+  const text = `${job.title} ${job.category} ${job.tags.join(" ")} ${job.summary}`.toLowerCase();
+  if (/embedded|firmware|fpga|hardware|robotics|autonomy|avionics|controls|sensor|iot|edge/.test(text)) return "Embedded, Hardware & Robotics";
+  if (/front[ -]?end|frontend|react|vue|angular|web engineer|ui engineer|javascript|typescript|design system/.test(text)) return "Frontend & Web";
+  if (/back[ -]?end|backend|api|server|distributed|platform|microservice|service engineer/.test(text)) return "Backend & Distributed Systems";
+  if (/full[ -]?stack|fullstack/.test(text)) return "Full-stack";
+  if (/mobile|ios|android|react native|swift|kotlin/.test(text)) return "Mobile";
+  if (/data engineer|analytics engineer|etl|pipeline|warehouse|spark|dbt|data platform/.test(text)) return "Data Engineering";
+  if (/machine learning| ml | ai |artificial intelligence|llm|model|research scientist|applied scientist|computer vision|nlp/.test(` ${text} `)) return "Machine Learning & AI";
+  if (/infra|infrastructure|cloud|devops|sre|site reliability|kubernetes|terraform|release|build|developer productivity/.test(text)) return "Infrastructure, DevOps & SRE";
+  if (/security engineer|appsec|application security|detection|threat|identity|privacy|trust/.test(text)) return "Security Engineering";
+  if (/qa|quality|test engineer|automation engineer|verification|validation|reliability test/.test(text)) return "QA, Test & Validation";
+  if (/product manager|program manager|project manager|scrum|roadmap/.test(text)) return "Product & Program";
+  if (/designer|design|ux|user experience|visual|brand|content design|researcher/.test(text)) return "Design & Research";
+  if (/sales|account executive|revenue|business development|customer success|solutions|pre[ -]?sales/.test(text)) return "Sales, Success & Solutions";
+  if (/support|customer experience|customer care|help|technical support|implementation/.test(text)) return "Support & Implementation";
+  if (/operations|supply|logistics|manufacturing|procurement|warehouse|facilities/.test(text)) return "Operations & Supply Chain";
+  if (/finance|accounting|legal|people|hr|recruit|talent|payroll|counsel/.test(text)) return "Business Operations";
+  return "General / Other";
+};
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const deferredQuery = useDeferredValue(query);
@@ -195,6 +216,7 @@ export default function Home() {
   const [sector, setSector] = useState("All sectors");
   const [size, setSize] = useState("All sizes");
   const [mode, setMode] = useState("All roles");
+  const [specialization, setSpecialization] = useState("All specializations");
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [interestOnly, setInterestOnly] = useState(false);
   const [sort, setSort] = useState("Newest");
@@ -253,6 +275,10 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("launchpad-applied", JSON.stringify(applied));
   }, [applied]);
+
+  useEffect(() => {
+    setSpecialization("All specializations");
+  }, [mode]);
 
   useEffect(() => {
     if (!showGmail) return;
@@ -339,6 +365,13 @@ export default function Home() {
   }
 
   const roleFamilies = ["All roles", ...Array.from(new Set(jobs.map((j) => j.category))).sort()];
+  const specializationJobs = mode === "All roles" ? jobs : jobs.filter((job) => job.category === mode);
+  const specializations = ["All specializations", ...Array.from(new Set(specializationJobs.map(roleSpecialization))).sort((a, b) => {
+    if (a === "General / Other") return 1;
+    if (b === "General / Other") return -1;
+    return a.localeCompare(b);
+  })];
+  const specializationCount = (label: string) => label === "All specializations" ? specializationJobs.length : specializationJobs.filter((job) => roleSpecialization(job) === label).length;
   const sources = ["All sources", ...Array.from(new Set(jobs.map((j) => j.source)))];
   const sectors = ["All sectors", ...Array.from(new Set([...registry.map((c) => c.sector), ...jobs.map((job) => job.sector)])).sort()];
   const sizes = ["All sizes", "Startup", "Small", "Medium", "Large", "Enterprise", "Unknown"];
@@ -357,14 +390,14 @@ export default function Home() {
   const filtered = useMemo(() => {
     const q = deferredQuery.trim();
     const result = jobs.map((j) => ({ job: j, score: relevanceScore(j, q) })).filter(({ job, score }) => {
-      return (!q || score > 0) && (source === "All sources" || job.source === source) && (sector === "All sectors" || job.sector === sector) && (size === "All sizes" || job.companySize === size) && (!remoteOnly || job.remote) && (mode === "All roles" || job.category === mode) && (!interestOnly || matchesInterest(job, preferences));
+      return (!q || score > 0) && (source === "All sources" || job.source === source) && (sector === "All sectors" || job.sector === sector) && (size === "All sizes" || job.companySize === size) && (!remoteOnly || job.remote) && (mode === "All roles" || job.category === mode) && (specialization === "All specializations" || roleSpecialization(job) === specialization) && (!interestOnly || matchesInterest(job, preferences));
     });
     if (q) return result.sort((a, b) => b.score - a.score || new Date(b.job.date).getTime() - new Date(a.job.date).getTime()).map(({ job }) => job);
     const plain = result.map(({ job }) => job);
     if (sort === "Company") return [...plain].sort((a, b) => a.company.localeCompare(b.company));
     if (sort === "Role family") return [...plain].sort((a, b) => a.category.localeCompare(b.category));
     return plain;
-  }, [jobs, deferredQuery, source, sector, size, remoteOnly, mode, sort, interestOnly, preferences]);
+  }, [jobs, deferredQuery, source, sector, size, remoteOnly, mode, specialization, sort, interestOnly, preferences]);
 
   const companyGroups = useMemo(() => Array.from(new Set(filtered.map((j) => j.company))).map((company) => {
     const companyJobs = filtered.filter((j) => j.company === company);
@@ -453,6 +486,7 @@ export default function Home() {
         <aside>
           <p className="label">US JOBS · ROLE FAMILY</p>
           {roleFamilies.map((x) => <button key={x} className={mode === x ? "filter active" : "filter"} onClick={() => { setMode(x); setVisible(30); }}>{x}<span>{x === "All roles" ? jobs.length : jobs.filter((j) => j.category === x).length}</span></button>)}
+          {mode !== "All roles" && <div className="nestedFilters"><p className="label space">{mode.toUpperCase()} · SPECIALIZATION</p>{specializations.map((x) => <button key={x} className={specialization === x ? "filter active subFilter" : "filter subFilter"} onClick={() => { setSpecialization(x); setVisible(30); }}>{x}<span>{specializationCount(x)}</span></button>)}</div>}
           <p className="label space">COMPANY SIZE · LIVE ROLES</p>
           {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => setSize(x)}>{x}<span>{sizeCount(x)}</span></button>)}
           <p className="label space">SECTORS</p>
