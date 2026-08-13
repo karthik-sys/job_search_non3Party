@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Launchpad — Direct Company Software & AI Jobs",
-  description: "US software and applied AI jobs retrieved directly from curated companies' official careers systems.",
+  title: "Launchpad — Direct Company US Jobs",
+  description: "A company-first US job dashboard built from official careers systems, with role search, company views, applied tracking, and market exploration.",
   icons: { icon: "/favicon.svg" },
 };
 

@@ -1,18 +1,22 @@
 # Launchpad Careers
 
-A company-first job index that discovers official careers pages, reads public ATS feeds, and sends applicants to the company-controlled application page.
+Launchpad is a company-first US job dashboard. It indexes official company careers feeds, lets users search roles and hiring companies, and sends applicants to the original company-controlled application page.
+
+The product goal is simple: your next role, without the noisy third-party reposting layer.
 
 ## What it does
 
-- Indexes direct Greenhouse and Ashby feeds from a curated US-company watchlist.
-- Discovers Greenhouse, Lever, and Ashby when a user submits a company website.
-- Previews every live role before a company is submitted to the registry.
-- Strictly classifies software-engineering and applied-AI titles.
-- Filters against structured US location fields rather than description keywords.
-- Stores new company submissions in a moderation queue using Cloudflare D1.
-- Links directly to the official ATS application URL.
+- Tracks a broad US company watchlist and resolves supported official ATS feeds.
+- Ingests live roles from Greenhouse, Ashby, and Lever without paid job-board APIs.
+- Searches across all kinds of US roles, not only software or AI.
+- Groups opportunities by role family, company, sector, company size, and applied status.
+- Adds job and company contribution tags from official posting/careers text.
+- Includes a Company Nebula market map for exploring sectors and hiring density.
+- Lets users onboard a company by name/website and preview its live roles before submission.
+- Supports optional personalization from pasted résumé text without storing the résumé.
+- Tracks applied roles locally and previews a Gmail-aware update workflow.
 
-## Local development
+## Quick start
 
 Requirements: Node.js 22.13 or newer.
 
@@ -21,40 +25,70 @@ npm install
 npm run dev
 ```
 
-The production build is Cloudflare Worker-compatible:
+That is enough to run the dashboard locally. There are no required paid APIs for the default demo dataset.
+
+Build for production:
 
 ```bash
 npm run build
+npm start
 ```
 
-## Architecture
+Run validation:
 
-- `app/page.tsx` — searchable job dashboard and onboarding UI
-- `app/api/discover/route.ts` — safe public-site inspection and ATS discovery
-- `app/api/companies/route.ts` — persistent moderation-queue submission
-- `work/direct-company-seeds.tsv` — curated starter watchlist
-- `work/fetch-direct-jobs.mjs` — direct ATS ingestion and strict classification
-- `drizzle/0001_company_submissions.sql` — D1 schema
+```bash
+npm test
+```
+
+## Data model
+
+The checked-in source keeps the app code small. Production builds can include a generated `public/jobs-data.json` snapshot from the direct careers feed crawler.
+
+Important files:
+
+- `app/page.tsx` — dashboard, search, company view, applied tracker, Gmail preview, nebula UI.
+- `app/api/discover/route.ts` — public company-site inspection and ATS discovery.
+- `app/api/preferences/route.ts` — transient résumé-to-interest suggestions.
+- `app/api/companies/route.ts` — moderation-queue submission endpoint.
+- `app/company-registry-preview.json` — public company watchlist preview.
+- `work/fetch-direct-jobs.mjs` — direct ATS ingestion crawler.
+- `drizzle/0001_company_submissions.sql` — Cloudflare D1 submission schema.
 
 ## Supported careers systems
 
 - Greenhouse
-- Lever
 - Ashby
+- Lever
 
-Provider adapters intentionally return a transparent unsupported result for custom career systems. Contributions for Workday, SmartRecruiters, iCIMS, and company-specific adapters are welcome.
+Provider adapters intentionally return a transparent unsupported result for custom career systems. Contributions for Workday, SmartRecruiters, iCIMS, Workable, and company-specific adapters are welcome.
 
-## Security model
+## Gmail-aware tracking
 
-The discovery endpoint accepts only public HTTPS origins, rejects credentials, custom ports, localhost, loopback, link-local, and common private-network ranges, follows bounded timeouts, and never executes scripts from inspected sites. Submissions enter a pending moderation queue; they are not automatically trusted or merged into the public index.
+The public UI has two scan modes:
+
+- `All detected emails` — previews application-looking email updates even before a user marks roles as applied.
+- `Matched to applied` — limits matching to roles the user explicitly marked as applied.
+
+The live demo does not directly access a user's Gmail. A production release should use user-owned OAuth, request read-only mail scopes by default, show previews before import, store only minimal metadata, and provide disconnect/delete controls.
+
+## Security and privacy model
+
+- Discovery accepts only public HTTPS company websites.
+- Localhost, loopback, link-local, private-network ranges, credentials, custom ports, and script execution are blocked.
+- Company submissions enter a pending moderation queue; they are not automatically trusted.
+- Résumé personalization is transient: pasted text is analyzed for suggestions and not stored.
+- Applied-role tracking is local browser state in the demo.
+- No paid third-party job aggregation APIs are required for the default workflow.
 
 ## Contributing
 
-1. Add or improve a provider adapter.
-2. Include representative response fixtures and malformed-input cases.
-3. Preserve direct official application URLs.
-4. Keep geography based on structured fields.
-5. Never classify a role from generic AI/engineering words in its description.
+Good first contributions:
+
+1. Add or improve a careers-system adapter.
+2. Add representative response fixtures and malformed-input tests.
+3. Improve company sector and contribution-tag classification.
+4. Improve crawler coverage while preserving direct official application URLs.
+5. Keep geography based on structured location fields wherever possible.
 
 ## License
 
