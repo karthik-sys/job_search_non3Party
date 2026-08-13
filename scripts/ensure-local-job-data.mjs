@@ -5,6 +5,10 @@ const plainPath = "public/jobs-data.json";
 const manifestPath = "public/job-snapshot/manifest.json";
 const appEmptyPath = "app/jobs-data.json";
 
+if (process.env.LAUNCHPAD_SKIP_UNPACK === "1") {
+  process.exit(0);
+}
+
 function hasUsablePlainData() {
   try {
     const stat = fs.statSync(plainPath);
