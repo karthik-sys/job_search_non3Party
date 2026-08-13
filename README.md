@@ -1,100 +1,61 @@
-# vinext-starter
+# Launchpad Careers
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+A company-first job index that discovers official careers pages, reads public ATS feeds, and sends applicants to the company-controlled application page.
 
-## Prerequisites
+## What it does
 
-- Node.js `>=22.13.0`
+- Indexes direct Greenhouse and Ashby feeds from a curated US-company watchlist.
+- Discovers Greenhouse, Lever, and Ashby when a user submits a company website.
+- Previews every live role before a company is submitted to the registry.
+- Strictly classifies software-engineering and applied-AI titles.
+- Filters against structured US location fields rather than description keywords.
+- Stores new company submissions in a moderation queue using Cloudflare D1.
+- Links directly to the official ATS application URL.
 
-## Quick Start
+## Local development
+
+Requirements: Node.js 22.13 or newer.
 
 ```bash
 npm install
 npm run dev
+```
+
+The production build is Cloudflare Worker-compatible:
+
+```bash
 npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+## Architecture
 
-## Included Shape
+- `app/page.tsx` — searchable job dashboard and onboarding UI
+- `app/api/discover/route.ts` — safe public-site inspection and ATS discovery
+- `app/api/companies/route.ts` — persistent moderation-queue submission
+- `work/direct-company-seeds.tsv` — curated starter watchlist
+- `work/fetch-direct-jobs.mjs` — direct ATS ingestion and strict classification
+- `drizzle/0001_company_submissions.sql` — D1 schema
 
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
+## Supported careers systems
 
-## Workspace Auth Headers
+- Greenhouse
+- Lever
+- Ashby
 
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
+Provider adapters intentionally return a transparent unsupported result for custom career systems. Contributions for Workday, SmartRecruiters, iCIMS, and company-specific adapters are welcome.
 
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
+## Security model
 
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
+The discovery endpoint accepts only public HTTPS origins, rejects credentials, custom ports, localhost, loopback, link-local, and common private-network ranges, follows bounded timeouts, and never executes scripts from inspected sites. Submissions enter a pending moderation queue; they are not automatically trusted or merged into the public index.
 
-Treat the full name as optional and fall back to email when it is absent:
+## Contributing
 
-```tsx
-import { headers } from "next/headers";
+1. Add or improve a provider adapter.
+2. Include representative response fixtures and malformed-input cases.
+3. Preserve direct official application URLs.
+4. Keep geography based on structured fields.
+5. Never classify a role from generic AI/engineering words in its description.
 
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
+## License
 
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Useful Commands
-
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+Choose an open-source license before the first public GitHub release. Apache-2.0 is recommended for a project intended to accept provider adapters from outside contributors.
