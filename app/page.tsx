@@ -23,7 +23,6 @@ type Job = {
   url: string;
   summary: string;
   companyEvidence: string;
-  specialization?: string;
   searchIndex?: {
     title: string;
     category: string;
@@ -137,7 +136,7 @@ const withSearchIndex = (job: Job): Job => {
   const company = normalizeSearch(job.company);
   const context = normalizeSearch(`${job.sector} ${job.companySize} ${job.location}`);
   const summary = normalizeSearch(job.summary);
-  return { ...job, specialization: roleSpecialization(job), searchIndex: { title, category, tags, company, context, summary, all: `${title} ${category} ${tags} ${company} ${context} ${summary}` } };
+  return { ...job, searchIndex: { title, category, tags, company, context, summary, all: `${title} ${category} ${tags} ${company} ${context} ${summary}` } };
 };
 const searchTerms = (value: string) => {
   const base = normalizeSearch(value).split(" ").filter((term) => term && term !== "and" && term.length > 1);
@@ -189,7 +188,6 @@ const contributionTags = (companyJobs: Job[], limit = 5) => {
 };
 
 const roleSpecialization = (job: Job) => {
-  if (job.specialization) return job.specialization;
   const text = `${job.title} ${job.category} ${job.tags.join(" ")} ${job.summary}`.toLowerCase();
   const family = job.category;
   const pick = (rules: [string, RegExp][], fallback: string) => rules.find(([, pattern]) => pattern.test(text))?.[0] ?? fallback;
@@ -424,45 +422,20 @@ export default function Home() {
     setGmailScanned(false);
   }
 
-  const dashboardIndex = useMemo(() => {
-    const roleCounts = new Map<string, number>();
-    const sizeCounts = new Map<string, number>();
-    const hiringCompanies = new Set<string>();
-    const sourceSet = new Set<string>();
-    const sectorSet = new Set(registry.map((company) => company.sector));
-    const specializationCountsByRole = new Map<string, Map<string, number>>();
-    const appliedJobsList: Job[] = [];
-    const discoverySeeds: Job[] = [];
-    for (const job of jobs) {
-      roleCounts.set(job.category, (roleCounts.get(job.category) || 0) + 1);
-      sizeCounts.set(job.companySize, (sizeCounts.get(job.companySize) || 0) + 1);
-      hiringCompanies.add(job.company);
-      sourceSet.add(job.source);
-      sectorSet.add(job.sector);
-      const spec = roleSpecialization(job);
-      if (!specializationCountsByRole.has(job.category)) specializationCountsByRole.set(job.category, new Map());
-      const specCounts = specializationCountsByRole.get(job.category)!;
-      specCounts.set(spec, (specCounts.get(spec) || 0) + 1);
-      if (applied[job.id]) appliedJobsList.push(job);
-      if (discoverySeeds.length < 8 && /engineer|manager|analyst|specialist|associate|designer|scientist|account|support|product/i.test(job.title)) discoverySeeds.push(job);
-    }
-    return { roleCounts, sizeCounts, hiringCompaniesCount: hiringCompanies.size, sources: Array.from(sourceSet).sort(), sectors: Array.from(sectorSet).sort(), specializationCountsByRole, appliedJobsList, discoverySeeds };
-  }, [jobs, applied]);
-  const roleFamilies = ["All roles", ...Array.from(dashboardIndex.roleCounts.keys()).sort()];
-  const activeSpecializationCounts = dashboardIndex.specializationCountsByRole.get(mode) ?? new Map<string, number>();
-  const specializationTotal = mode === "All roles" ? jobs.length : (dashboardIndex.roleCounts.get(mode) || 0);
-  const specializations = ["All specializations", ...Array.from(activeSpecializationCounts.keys()).sort((a, b) => {
+  const roleFamilies = ["All roles", ...Array.from(new Set(jobs.map((j) => j.category))).sort()];
+  const specializationJobs = mode === "All roles" ? jobs : jobs.filter((job) => job.category === mode);
+  const specializations = ["All specializations", ...Array.from(new Set(specializationJobs.map(roleSpecialization))).sort((a, b) => {
     if (a === "General / Other") return 1;
     if (b === "General / Other") return -1;
     return a.localeCompare(b);
   })];
-  const specializationCount = (label: string) => label === "All specializations" ? specializationTotal : (activeSpecializationCounts.get(label) || 0);
-  const sources = ["All sources", ...dashboardIndex.sources];
-  const sectors = ["All sectors", ...dashboardIndex.sectors];
+  const specializationCount = (label: string) => label === "All specializations" ? specializationJobs.length : specializationJobs.filter((job) => roleSpecialization(job) === label).length;
+  const sources = ["All sources", ...Array.from(new Set(jobs.map((j) => j.source)))];
+  const sectors = ["All sectors", ...Array.from(new Set([...registry.map((c) => c.sector), ...jobs.map((job) => job.sector)])).sort()];
   const sizes = ["All sizes", "Startup", "Small", "Medium", "Large", "Enterprise", "Unknown"];
-  const appliedJobs = dashboardIndex.appliedJobsList;
-  const sizeCount = (label: string) => label === "All sizes" ? jobs.length : (dashboardIndex.sizeCounts.get(label) || 0);
-  const discoverySeedJobs = dashboardIndex.discoverySeeds;
+  const appliedJobs = jobs.filter((job) => applied[job.id]);
+  const sizeCount = (label: string) => label === "All sizes" ? jobs.length : jobs.filter((job) => job.companySize === label).length;
+  const discoverySeedJobs = jobs.filter((job) => /engineer|manager|analyst|specialist|associate|designer|scientist|account|support|product/i.test(job.title)).slice(0, 8);
   const emailPreviewSource = gmailMode === "applied" ? appliedJobs : discoverySeedJobs;
   const mockEmailUpdates = emailPreviewSource.slice(0, 8).map((job, index) => ({
     job,
@@ -474,43 +447,29 @@ export default function Home() {
 
   const filtered = useMemo(() => {
     const q = deferredQuery.trim();
-    const base = jobs.filter((job) => (source === "All sources" || job.source === source) && (sector === "All sectors" || job.sector === sector) && (size === "All sizes" || job.companySize === size) && (!remoteOnly || job.remote) && (mode === "All roles" || job.category === mode) && (specialization === "All specializations" || roleSpecialization(job) === specialization) && (!interestOnly || matchesInterest(job, preferences)));
-    if (q) return base
-      .map((job) => ({ job, score: relevanceScore(job, q) }))
-      .filter(({ score }) => score > 0)
-      .sort((a, b) => b.score - a.score || new Date(b.job.date).getTime() - new Date(a.job.date).getTime())
-      .map(({ job }) => job);
-    const plain = base;
+    const result = jobs.map((j) => ({ job: j, score: relevanceScore(j, q) })).filter(({ job, score }) => {
+      return (!q || score > 0) && (source === "All sources" || job.source === source) && (sector === "All sectors" || job.sector === sector) && (size === "All sizes" || job.companySize === size) && (!remoteOnly || job.remote) && (mode === "All roles" || job.category === mode) && (specialization === "All specializations" || roleSpecialization(job) === specialization) && (!interestOnly || matchesInterest(job, preferences));
+    });
+    if (q) return result.sort((a, b) => b.score - a.score || new Date(b.job.date).getTime() - new Date(a.job.date).getTime()).map(({ job }) => job);
+    const plain = result.map(({ job }) => job);
     if (sort === "Company") return [...plain].sort((a, b) => a.company.localeCompare(b.company));
     if (sort === "Role family") return [...plain].sort((a, b) => a.category.localeCompare(b.category));
     return plain;
   }, [jobs, deferredQuery, source, sector, size, remoteOnly, mode, specialization, sort, interestOnly, preferences]);
 
-  const companyGroups = useMemo(() => {
-    if (view !== "companies") return [];
-    const groups = new Map<string, Job[]>();
-    filtered.forEach((job) => {
-      const group = groups.get(job.company);
-      if (group) group.push(job);
-      else groups.set(job.company, [job]);
-    });
-    return Array.from(groups.entries()).map(([company, companyJobs]) => {
-      const byRole = companyJobs.reduce<Record<string, number>>((counts, job) => {
-        counts[job.category] = (counts[job.category] || 0) + 1;
-        return counts;
-      }, {});
-      return { company, jobs: companyJobs, sector: companyJobs[0].sector, companySize: companyJobs[0].companySize, source: companyJobs[0].source, byRole, contributionTags: contributionTags(companyJobs), interestMatches: companyJobs.filter((job) => matchesInterest(job, preferences)).length, remote: companyJobs.filter((j) => j.remote).length };
-    }).sort((a, b) => (interestOnly ? b.interestMatches - a.interestMatches : b.jobs.length - a.jobs.length));
-  }, [filtered, interestOnly, preferences, view]);
+  const companyGroups = useMemo(() => Array.from(new Set(filtered.map((j) => j.company))).map((company) => {
+    const companyJobs = filtered.filter((j) => j.company === company);
+    const byRole = Object.fromEntries(Array.from(new Set(companyJobs.map((j) => j.category))).map((role) => [role, companyJobs.filter((j) => j.category === role).length]));
+    return { company, jobs: companyJobs, sector: companyJobs[0].sector, companySize: companyJobs[0].companySize, source: companyJobs[0].source, byRole, contributionTags: contributionTags(companyJobs), interestMatches: companyJobs.filter((job) => matchesInterest(job, preferences)).length, remote: companyJobs.filter((j) => j.remote).length };
+  }).sort((a, b) => (interestOnly ? b.interestMatches - a.interestMatches : b.jobs.length - a.jobs.length)), [filtered, interestOnly, preferences]);
 
   const registryFiltered = useMemo(() => {
-    if (view !== "universe") return [];
     const q = query.trim().toLowerCase();
     return registry.filter((company) => {
       const haystack = `${company.name} ${company.website} ${company.sector} ${company.size} ${company.location} ${company.source} ${company.provider} ${company.notes}`.toLowerCase();
       return (!q || haystack.includes(q)) && (sector === "All sectors" || company.sector === sector) && (size === "All sizes" || company.size === size);
     });
-  }, [query, sector, size, view]);
+  }, [query, sector, size]);
   const nebulaSectors = useMemo(() => sectors.filter((name) => name !== "All sectors").map((sectorName, sectorIndex) => {
     const sectorNeedle = sectorName.toLowerCase();
     const sectorJobs = jobs.filter((job) => {
@@ -575,7 +534,7 @@ export default function Home() {
         </div>
         <div className="stats">
           <div><strong>{jobs.length || feedSummary.jobs}</strong><span>US open roles</span></div>
-          <div><strong>{dashboardIndex.hiringCompaniesCount || feedSummary.companiesWithMatches}</strong><span>hiring companies</span></div>
+          <div><strong>{new Set(jobs.map((j) => j.company)).size || feedSummary.companiesWithMatches}</strong><span>hiring companies</span></div>
           <div><strong>{feedSummary.feedsChecked}</strong><span>feeds checked</span></div>
           <div><strong>{registrySummary.total}</strong><span>companies tracked</span></div>
         </div>
@@ -584,7 +543,7 @@ export default function Home() {
       <section className="workspace">
         <aside>
           <p className="label">US JOBS · ROLE FAMILY</p>
-          {roleFamilies.map((x) => <div key={x} className="roleFamilyBlock"><button className={mode === x ? "filter active" : "filter"} onClick={() => { setMode(x); setVisible(30); }}>{x}<span>{x === "All roles" ? jobs.length : (dashboardIndex.roleCounts.get(x) || 0)}</span></button>{mode === x && x !== "All roles" && <div className="nestedFilters"><p className="label">{x.toUpperCase()} · SPECIALIZATION</p>{specializations.map((child) => <button key={child} className={specialization === child ? "filter active subFilter" : "filter subFilter"} onClick={() => { setSpecialization(child); setVisible(30); }}>{child}<span>{specializationCount(child)}</span></button>)}</div>}</div>)}
+          {roleFamilies.map((x) => <div key={x} className="roleFamilyBlock"><button className={mode === x ? "filter active" : "filter"} onClick={() => { setMode(x); setVisible(30); }}>{x}<span>{x === "All roles" ? jobs.length : jobs.filter((j) => j.category === x).length}</span></button>{mode === x && x !== "All roles" && <div className="nestedFilters"><p className="label">{x.toUpperCase()} · SPECIALIZATION</p>{specializations.map((child) => <button key={child} className={specialization === child ? "filter active subFilter" : "filter subFilter"} onClick={() => { setSpecialization(child); setVisible(30); }}>{child}<span>{specializationCount(child)}</span></button>)}</div>}</div>)}
           <p className="label space">COMPANY SIZE · LIVE ROLES</p>
           {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => setSize(x)}>{x}<span>{sizeCount(x)}</span></button>)}
           <p className="label space">SECTORS</p>
