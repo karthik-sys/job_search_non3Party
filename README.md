@@ -42,7 +42,7 @@ npm test
 
 ## Data model
 
-The checked-in source keeps the app code small. Production builds can include a generated `public/jobs-data.json` snapshot from the direct careers feed crawler.
+The checked-in source includes a compressed public job snapshot under `public/job-snapshot/`, so a fresh clone can run the same dashboard dataset locally without paid APIs or a crawler step. The app first checks `public/jobs-data.json`; when that file is empty, it loads and decompresses the chunked snapshot.
 
 Important files:
 
@@ -51,7 +51,8 @@ Important files:
 - `app/api/preferences/route.ts` — transient résumé-to-interest suggestions.
 - `app/api/companies/route.ts` — moderation-queue submission endpoint.
 - `app/company-registry-preview.json` — public company watchlist preview.
-- `work/fetch-direct-jobs.mjs` — direct ATS ingestion crawler.
+- `public/job-snapshot/` — compressed Greenhouse, Ashby, and Lever direct-ATS role snapshot used by local/dev builds.
+- `app/job-feed-summary.json` — dashboard counts for the checked-in snapshot.
 - `drizzle/0001_company_submissions.sql` — Cloudflare D1 submission schema.
 
 ## Supported careers systems
@@ -84,6 +85,8 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 GMAIL_COOKIE_SECRET=at-least-32-characters
 ```
+
+These are optional for local browsing/search. Without them, the Gmail drawer shows setup-needed copy; all job search, company views, and Company Nebula still work.
 
 Google OAuth redirect URI:
 

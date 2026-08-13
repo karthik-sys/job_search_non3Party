@@ -1,0 +1,12 @@
+{
+  "encoding": "gzip",
+  "parts": [
+    "part-001.json.gz",
+    "part-002.json.gz",
+    "part-003.json.gz",
+    "part-004.json.gz"
+  ],
+  "bytes": 2869405,
+  "sourceBytes": 30272481,
+  "generatedAt": "2026-08-13T18:42:05.117Z"
+}
