@@ -2,6 +2,8 @@
 
 Launchpad is a local-first, company-first job dashboard. It indexes official company careers feeds, lets users search roles and hiring companies, and sends applicants to the original company-controlled application page.
 
+You are ABSOLUTELY allowed to duplicate and copy this code to your own repo and make your own modifications. Please do not feel beholden to need to contribute here if you do not wish to do so. Local deployment is highly encouraged as it decentralizes progress and allows people to be more creative with their outputs. 
+
 The product goal is simple: your next role, without the noisy third-party reposting layer. This is meant to be forked, remixed, and run locally — not to become another consolidated hiring network.
 
 ## What it does
