@@ -299,7 +299,7 @@ export default function Home() {
     if (sort === "Company") return [...plain].sort((a, b) => a.company.localeCompare(b.company));
     if (sort === "Role family") return [...plain].sort((a, b) => a.category.localeCompare(b.category));
     return plain;
-  }, [query, source, sector, size, remoteOnly, mode, sort, interestOnly, preferences]);
+  }, [jobs, query, source, sector, size, remoteOnly, mode, sort, interestOnly, preferences]);
 
   const companyGroups = useMemo(() => Array.from(new Set(filtered.map((j) => j.company))).map((company) => {
     const companyJobs = filtered.filter((j) => j.company === company);
