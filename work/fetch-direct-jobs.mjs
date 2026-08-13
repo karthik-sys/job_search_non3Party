@@ -6,8 +6,8 @@ const largeCompanies = new Set(["Anthropic","Scale AI","GitLab","MongoDB","Confl
 const mediumCompanies = new Set(["Weights & Biases","Hugging Face","Cohere","Together AI","Anyscale","LangChain","Modal","Replicate","Vercel","Supabase","Airtable","Brex","Ramp","Mercury","Saronic","Varda Space","Skydio","Agility Robotics","Form Energy","Redwood Materials","Fervo Energy","Watershed","Carbon Direct","Abnormal Security","Chainguard","Huntress","Vanta","Drata","Arctic Wolf"]);
 const startupCompanies = new Set(["OpenAI","Perplexity","Charm Industrial"]);
 const companySize = (company, fallback = "Unknown") => startupCompanies.has(company) ? "Startup" : mediumCompanies.has(company) ? "Medium" : enterpriseCompanies.has(company) ? "Enterprise" : largeCompanies.has(company) ? "Large" : fallback || "Unknown";
-const cutoff = Date.UTC(2026,6,14);
 const roleFamilies = [
+  ["Retail & Merchandising", /\b(merchant|merchandising|buyer|buying|retail planning|assortment|inventory|pricing|category manager)\b/i],
   ["Machine Learning & AI", /\b(machine learning|\bml\b|artificial intelligence|\bai\b|applied scientist|research scientist|data scientist|data engineer|analytics engineer|computer vision|nlp|llm|generative ai|mlops|data platform)\b/i],
   ["Software Engineering", /\b(software engineer|software developer|full.?stack|front.?end|back.?end|mobile engineer|mobile developer|ios|android|platform engineer|devops|site reliability|\bsre\b|infrastructure engineer|cloud engineer|systems engineer|developer experience|software architect|engineering manager|qa engineer|test engineer)\b/i],
   ["Product & Design", /\b(product manager|program manager|project manager|product designer|ux|ui|user researcher|design manager|brand designer|content designer)\b/i],
@@ -18,7 +18,7 @@ const roleFamilies = [
   ["Customer & Support", /\b(support|customer|implementation|technical account|professional services|education|training)\b/i],
   ["Hardware & Robotics", /\b(hardware|mechanical|electrical|firmware|robotics|embedded|avionics|manufacturing engineer)\b/i],
 ];
-const us = /United States|\bUS\b|\bUSA\b|Remote.*U\.S|California|New York|Texas|Washington|Massachusetts|Virginia|Colorado|Illinois|Georgia|Florida|Maryland|Pennsylvania|Oregon|Arizona|North Carolina|District of Columbia|San Francisco|Seattle|Boston|Austin|Chicago|Atlanta/i;
+const us = /United States|\bUS\b|\bUSA\b|Remote.*U\.S|California|New York|Texas|Washington|Massachusetts|Virginia|Colorado|Illinois|Georgia|Florida|Maryland|Pennsylvania|Oregon|Arizona|North Carolina|District of Columbia|San Francisco|Seattle|Boston|Austin|Chicago|Atlanta|\b(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|IA|ID|IL|IN|KS|KY|LA|MA|MD|ME|MI|MN|MO|MS|MT|NC|ND|NE|NH|NJ|NM|NV|NY|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VA|VT|WA|WI|WV|WY|DC)\b/;
 const skillPatterns = [
   ["Python", /\bpython\b/i],
   ["JavaScript", /\bjavascript|\btypescript|\bnode\.?js|\breact\b/i],
@@ -36,6 +36,14 @@ const skillPatterns = [
   ["Data", /\bsql\b|spark|data pipeline|warehouse|analytics/i],
   ["Security", /security|privacy|threat|vulnerability|compliance/i],
   ["Product Strategy", /roadmap|product strategy|user research|experimentation/i],
+  ["Merchandising", /merchandising|merchant|assortment|line plan|category growth/i],
+  ["Retail Planning", /retail planning|buying|buyer|marketplace trends|competitive shopping/i],
+  ["Inventory", /inventory|planning|forecast|stock|assortment/i],
+  ["Pricing", /pricing|gross margin|profitability|competitive pricing/i],
+  ["Excel", /\bexcel\b|microsoft office|spreadsheet/i],
+  ["Furniture", /furniture|décor|decor|interior designer|upholstery|home/i],
+  ["3+ Years", /\b3\+ years|\b3 years|\bthree years/i],
+  ["Bachelor's Degree", /bachelor|degree/i],
   ["Sales", /quota|pipeline|account executive|enterprise sales/i],
   ["Customer Success", /customer success|implementation|solutions/i],
   ["Leadership", /manager|leadership|mentor|cross-functional/i],
@@ -58,6 +66,11 @@ const clean = s => decodeEntities(s)
   .replace(/\s+/g, " ")
   .trim();
 const classify = (title) => roleFamilies.find(([, pattern]) => pattern.test(title))?.[0] || "Other";
+const inferSector = (title, content, fallback) => {
+  const text = `${title} ${content}`.toLowerCase();
+  if (/furniture|décor|decor|interior designer|upholstery|retail|merchant|merchandising|buying|assortment/.test(text)) return "Retail & Commerce";
+  return fallback;
+};
 const summarize = (content) => {
   const sentence = content.match(/^.{80,360}?[.!?](?:\s|$)/)?.[0];
   return (sentence || content.slice(0, 320)).trim();
@@ -116,10 +129,11 @@ async function fetchBoard(row){
       const dateValue = j.updated_at || j.publishedAt || j.created_at || j.createdAt || new Date().toISOString();
       const date = typeof dateValue === 'number' ? new Date(dateValue).toISOString() : dateValue;
       const category = classify(title);
+      const inferredSector = inferSector(title, content, row.sector);
       const remote = /remote/i.test(`${location} ${title}`);
-      if (!(us.test(location) || (remote && /us|united states|us-hiring-signal|verified-seed/i.test(`${row.confidence} ${location}`))) || new Date(date).getTime() < cutoff) return [];
+      if (!(us.test(location) || (remote && /us|united states|us-hiring-signal|verified-seed/i.test(`${row.confidence} ${location}`)))) return [];
       const providerLabel = row.ats === 'greenhouse' ? 'Greenhouse' : row.ats === 'lever' ? 'Lever' : 'Ashby';
-      return [{id:`${row.ats}-${row.slug}-${j.id || j.jobUrl || j.hostedUrl}`,source:`Direct ${providerLabel}`,company:row.company,companySize:companySize(row.company,row.size),sector:row.sector,title,category,location:typeof location==='string'&&location?location:'United States / Remote',remote,type:j.categories?.commitment || '',level:'',date,salary:'',tags:requirements(title,content,category,row.sector),url:j.absolute_url || j.jobUrl || j.applyUrl || j.hostedUrl,summary:summarize(content),companyEvidence:'Posting retrieved from a company-controlled public careers feed.'}];
+      return [{id:`${row.ats}-${row.slug}-${j.id || j.jobUrl || j.hostedUrl}`,source:`Direct ${providerLabel}`,company:row.company,companySize:companySize(row.company,row.size),sector:inferredSector,title,category,location:typeof location==='string'&&location?location:'United States / Remote',remote,type:j.categories?.commitment || '',level:'',date,salary:'',tags:requirements(title,content,category,inferredSector),url:j.absolute_url || j.jobUrl || j.applyUrl || j.hostedUrl,summary:summarize(content),companyEvidence:'Posting retrieved from a company-controlled public careers feed.'}];
     });
     return {...row,status:200,total:raw.length,jobs};
   } catch (e) { return {...row,status:'error',jobs:[]}; }

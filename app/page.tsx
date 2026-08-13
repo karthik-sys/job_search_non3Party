@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 import registry from "./company-registry-preview.json";
 import registrySummary from "./company-registry-summary.json";
 import feedSummary from "./job-feed-summary.json";
@@ -42,6 +42,49 @@ const interestAliases: Record<string, string[]> = {
   Security: ["Security", "trust", "risk", "privacy"],
   Operations: ["Operations", "strategy", "supply chain"],
 };
+const searchSynonyms: Record<string, string[]> = {
+  ai: ["artificial", "intelligence", "machine", "learning", "ml", "llm", "generative"],
+  ml: ["machine", "learning", "ai", "model"],
+  swe: ["software", "engineer", "engineering", "developer"],
+  dev: ["developer", "software", "engineer"],
+  frontend: ["front", "end", "react", "ui"],
+  backend: ["back", "end", "api", "distributed", "platform"],
+  customer: ["customer", "client", "user", "buyer", "account"],
+  support: ["support", "service", "helpdesk", "implementation", "success"],
+  sales: ["sales", "account", "revenue", "gtm", "commercial"],
+  gtm: ["sales", "marketing", "growth", "revenue", "commercial"],
+  product: ["product", "pm", "strategy", "roadmap"],
+  design: ["design", "designer", "ux", "ui", "research"],
+  security: ["security", "privacy", "risk", "trust", "compliance"],
+  ops: ["operations", "strategy", "logistics", "supply"],
+};
+const normalizeSearch = (value: string) => value.toLowerCase().replace(/&/g, " and ").replace(/[^a-z0-9+#.]+/g, " ").replace(/\s+/g, " ").trim();
+const searchTerms = (value: string) => {
+  const base = normalizeSearch(value).split(" ").filter((term) => term && term !== "and" && term.length > 1);
+  return Array.from(new Set(base.flatMap((term) => [term, ...(searchSynonyms[term] || [])])));
+};
+const fieldScore = (field: string, terms: string[], weight: number) => {
+  const text = normalizeSearch(field);
+  return terms.reduce((score, term) => score + (text.includes(term) ? weight : 0), 0);
+};
+const relevanceScore = (job: Job, query: string) => {
+  const terms = searchTerms(query);
+  if (!terms.length) return 1;
+  const score =
+    fieldScore(job.title, terms, 12) +
+    fieldScore(job.category, terms, 10) +
+    fieldScore(job.tags.join(" "), terms, 8) +
+    fieldScore(job.company, terms, 6) +
+    fieldScore(`${job.sector} ${job.companySize} ${job.location}`, terms, 4) +
+    fieldScore(job.summary, terms, 2);
+  const required = normalizeSearch(query).split(" ").filter((term) => term && term !== "and" && term.length > 1);
+  const text = normalizeSearch(`${job.title} ${job.category} ${job.tags.join(" ")} ${job.company} ${job.sector} ${job.summary}`);
+  const requiredHits = required.filter((term) => text.includes(term) || (searchSynonyms[term] || []).some((alt) => text.includes(alt))).length;
+  const total = score + requiredHits * 5;
+  if (required.length && requiredHits < required.length) return 0;
+  if (required.length > 1 && total < 45) return 0;
+  return total;
+};
 
 const fmtDate = (value: string) => {
   const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86400000));
@@ -69,6 +112,7 @@ export default function Home() {
   const [view, setView] = useState<"roles" | "companies" | "universe" | "applied">("roles");
   const [showOnboard, setShowOnboard] = useState(false);
   const [showGmail, setShowGmail] = useState(false);
+  const [showNebula, setShowNebula] = useState(false);
   const [gmailDays, setGmailDays] = useState("30");
   const [gmailScanned, setGmailScanned] = useState(false);
   const [companyName, setCompanyName] = useState("");
@@ -140,7 +184,7 @@ export default function Home() {
 
   const roleFamilies = ["All roles", ...Array.from(new Set(jobs.map((j) => j.category))).sort()];
   const sources = ["All sources", ...Array.from(new Set(jobs.map((j) => j.source)))];
-  const sectors = ["All sectors", ...Array.from(new Set(registry.map((c) => c.sector))).sort()];
+  const sectors = ["All sectors", ...Array.from(new Set([...registry.map((c) => c.sector), ...jobs.map((job) => job.sector)])).sort()];
   const sizes = ["All sizes", "Startup", "Small", "Medium", "Large", "Enterprise", "Unknown"];
   const appliedJobs = jobs.filter((job) => applied[job.id]);
   const sizeCount = (label: string) => label === "All sizes" ? jobs.length : jobs.filter((job) => job.companySize === label).length;
@@ -151,14 +195,15 @@ export default function Home() {
   }));
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const result = jobs.filter((j) => {
-      const haystack = `${j.title} ${j.company} ${j.location} ${j.category} ${j.tags.join(" ")} ${j.summary}`.toLowerCase();
-      return (!q || haystack.includes(q)) && (source === "All sources" || j.source === source) && (sector === "All sectors" || j.sector === sector) && (size === "All sizes" || j.companySize === size) && (!remoteOnly || j.remote) && (mode === "All roles" || j.category === mode) && (!interestOnly || matchesInterest(j, preferences));
+    const q = query.trim();
+    const result = jobs.map((j) => ({ job: j, score: relevanceScore(j, q) })).filter(({ job, score }) => {
+      return (!q || score > 0) && (source === "All sources" || job.source === source) && (sector === "All sectors" || job.sector === sector) && (size === "All sizes" || job.companySize === size) && (!remoteOnly || job.remote) && (mode === "All roles" || job.category === mode) && (!interestOnly || matchesInterest(job, preferences));
     });
-    if (sort === "Company") return [...result].sort((a, b) => a.company.localeCompare(b.company));
-    if (sort === "Role family") return [...result].sort((a, b) => a.category.localeCompare(b.category));
-    return result;
+    if (q) return result.sort((a, b) => b.score - a.score || new Date(b.job.date).getTime() - new Date(a.job.date).getTime()).map(({ job }) => job);
+    const plain = result.map(({ job }) => job);
+    if (sort === "Company") return [...plain].sort((a, b) => a.company.localeCompare(b.company));
+    if (sort === "Role family") return [...plain].sort((a, b) => a.category.localeCompare(b.category));
+    return plain;
   }, [query, source, sector, size, remoteOnly, mode, sort, interestOnly, preferences]);
 
   const companyGroups = useMemo(() => Array.from(new Set(filtered.map((j) => j.company))).map((company) => {
@@ -174,13 +219,21 @@ export default function Home() {
       return (!q || haystack.includes(q)) && (sector === "All sectors" || company.sector === sector) && (size === "All sizes" || company.size === size);
     });
   }, [query, sector, size]);
+  const nebulaSectors = useMemo(() => Array.from(new Set(jobs.map((job) => job.sector))).map((sectorName, sectorIndex) => {
+    const sectorJobs = jobs.filter((job) => job.sector === sectorName);
+    const companies = Array.from(new Set(sectorJobs.map((job) => job.company))).map((company) => {
+      const companyJobs = sectorJobs.filter((job) => job.company === company);
+      return { company, count: companyJobs.length, size: companyJobs[0].companySize, roles: Array.from(new Set(companyJobs.map((job) => job.category))).slice(0, 4) };
+    }).sort((a, b) => b.count - a.count).slice(0, 12);
+    return { sector: sectorName, count: sectorJobs.length, companies, index: sectorIndex };
+  }).sort((a, b) => b.count - a.count), [jobs]);
 
   return (
     <main>
       <header className="topbar">
         <a className="brand" href="#top"><span className="brandMark">L</span><span>Launchpad</span></a>
         <div className="fresh"><span></span> Official company career feeds</div>
-        <div className="headerActions"><button className="ghost" onClick={() => setShowGmail(true)}>Link Gmail</button><button className="ghost" onClick={() => setShowOnboard(true)}>+ Add company</button></div>
+        <div className="headerActions"><button className="ghost" onClick={() => setShowNebula(true)}>Company Nebula</button><button className="ghost" onClick={() => setShowGmail(true)}>Link Gmail</button><button className="ghost" onClick={() => setShowOnboard(true)}>+ Add company</button></div>
       </header>
 
       <section className="hero" id="top">
@@ -259,6 +312,7 @@ export default function Home() {
       {showTune && <div className="drawerBackdrop" onClick={() => setShowTune(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowTune(false)}>×</button><p className="eyebrow">OPTIONAL · USER CONTROLLED</p><h2>Tune the noise out.</h2><p>Paste résumé text for suggested interest areas. Nothing is stored, and every suggestion can be ignored or replaced with your own.</p><form onSubmit={analyzePreferences}><label>Résumé text<textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} placeholder="Paste résumé text here..." /></label><button className="apply">Suggest interest areas</button></form>{suggestions.length > 0 && <div className="suggestions"><p className="label">SUGGESTED - CHOOSE ANY</p>{suggestions.map((s) => <button key={s.id} className={preferences.includes(s.label) ? "chosen" : ""} onClick={() => addPreference(s.label)}><b>{s.label}</b><span>{s.signals.join(" · ")}</span><em>{preferences.includes(s.label) ? "Added" : "+ Add"}</em></button>)}</div>}<div className="customPref"><input value={customPreference} onChange={(e) => setCustomPreference(e.target.value)} placeholder="Create your own interest..." /><button onClick={() => { if (customPreference.trim()) { addPreference(customPreference.trim()); setCustomPreference(""); } }}>Add</button></div><small>Interests now affect filters when Use interests is on. Résumé text is analyzed transiently and is not saved.</small></section></div>}
 
       {showGmail && <div className="drawerBackdrop" onClick={() => setShowGmail(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowGmail(false)}>×</button><p className="eyebrow">OPTIONAL GMAIL SYNC</p><h2>Email-aware tracking.</h2><p>Pick a lookback window, preview detected application updates, then import only the status changes you want attached to applied roles.</p><div className="gmailControls"><label>Look back<select value={gmailDays} onChange={(e) => { setGmailDays(e.target.value); setGmailScanned(false); }}><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option></select></label><button className="apply" onClick={() => setGmailScanned(true)}>Preview Gmail updates</button></div><div className="gmailMock"><div><b>Detected update types</b><span>Application received · Assessment · Interview · Offer · Rejection</span></div><div><b>Privacy controls</b><span>Manual import · Delete imported metadata · Disconnect anytime</span></div></div>{gmailScanned && <div className="emailResults"><p className="label">PREVIEW · LAST {gmailDays} DAYS</p>{mockEmailUpdates.length ? mockEmailUpdates.map(({ job, status, signal }) => <article key={job.id}><div><b>{signal}</b><span>{job.company} · {job.title}</span></div><button onClick={() => setApplied((records) => ({ ...records, [job.id]: { ...(records[job.id] || { jobId: job.id, appliedAt: new Date().toISOString(), notes: "" }), status: status as AppliedRecord["status"] } }))}>Import {status}</button></article>) : <div className="empty smallEmpty"><b>No applied roles to match yet.</b><p>Mark a role as applied first, then scan a Gmail window for company and role updates.</p></div>}</div>}<small>The live Sites app cannot directly use the Codex Gmail connector. In a public release this button should start a user-owned OAuth flow; imported metadata should be deletable and sync should be revocable.</small></section></div>}
+      {showNebula && <div className="nebulaOverlay"><button className="nebulaClose" onClick={() => setShowNebula(false)}>×</button><section className="nebulaShell"><div className="nebulaIntro"><p className="eyebrow">US MARKET MAP</p><h2>Company Nebula</h2><p>Explore sectors as markets, companies as gravitational nodes, and role volume as mass. Larger nodes mean more active official postings in that market.</p><div className="nebulaStats"><span>{nebulaSectors.length} sectors</span><span>{feedSummary.companiesWithMatches} hiring companies</span><span>{feedSummary.jobs} roles</span></div></div><div className="nebulaStage">{nebulaSectors.map((cluster, i) => <article className="sectorCluster" key={cluster.sector} style={{ "--i": i, "--size": Math.min(1.8, 0.75 + cluster.count / Math.max(1, feedSummary.jobs) * 8), "--x": `${(i % 4 - 1.5) * 160}px`, "--y": `${(Math.floor(i / 4) - 1) * 150}px`, "--z": `${(i % 3 - 1) * 95}px` } as CSSProperties}><div className="sectorCore"><b>{cluster.sector}</b><span>{cluster.count} roles</span></div>{cluster.companies.map((company, j) => <div className="companyNode" key={company.company} style={{ "--j": j, "--mass": Math.min(2.2, 0.65 + company.count / Math.max(1, cluster.companies[0]?.count || 1) * 1.2) } as CSSProperties} title={`${company.company}: ${company.count} roles`}><strong>{company.company.slice(0, 2)}</strong><em>{company.count}</em></div>)}</article>)}</div><aside className="nebulaLegend"><h3>Market signals</h3>{nebulaSectors.slice(0, 8).map((cluster) => <button key={cluster.sector} onClick={() => { setSector(cluster.sector); setView("companies"); setShowNebula(false); }}><span>{cluster.sector}</span><b>{cluster.companies.length} companies · {cluster.count} roles</b></button>)}</aside></section></div>}
     </main>
   );
 }

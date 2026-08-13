@@ -1,26 +1,27 @@
 {
   "feedsChecked": 1123,
   "boardsResolved": 783,
-  "companiesWithMatches": 452,
-  "jobs": 15490,
+  "companiesWithMatches": 567,
+  "jobs": 24162,
   "sizes": {
-    "Unknown": 1996,
-    "Large": 3069,
-    "Enterprise": 2615,
-    "Medium": 7778,
-    "Startup": 32
+    "Enterprise": 3337,
+    "Medium": 12190,
+    "Unknown": 5213,
+    "Large": 3344,
+    "Startup": 78
   },
   "sectors": {
-    "Gaming & Interactive": 3641,
-    "Fintech": 982,
-    "Consumer Technology": 1126,
-    "AI & Developer Tools": 1270,
-    "Cybersecurity": 367,
-    "Other US Companies": 5557,
-    "Enterprise Software & Cloud": 807,
-    "Climate & Infrastructure": 280,
-    "Automotive & Robotics": 732,
-    "Defense & Aerospace": 488,
-    "Healthcare & Biotech": 240
+    "Retail & Commerce": 2520,
+    "Gaming & Interactive": 4428,
+    "Other US Companies": 10555,
+    "Climate & Infrastructure": 365,
+    "Defense & Aerospace": 817,
+    "Enterprise Software & Cloud": 850,
+    "Consumer Technology": 862,
+    "Fintech": 1093,
+    "AI & Developer Tools": 1373,
+    "Automotive & Robotics": 550,
+    "Cybersecurity": 416,
+    "Healthcare & Biotech": 333
   }
 }
