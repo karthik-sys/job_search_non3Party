@@ -7,7 +7,7 @@ The product goal is simple: your next role, without the noisy third-party repost
 ## What it does
 
 - Tracks a broad US company watchlist and resolves supported official ATS feeds.
-- Ingests live roles from Greenhouse, Ashby, Lever, and SmartRecruiters without paid job-board APIs.
+- Ingests live roles from Greenhouse, Ashby, Lever, SmartRecruiters, BambooHR, Breezy, Recruitee, and Workable without paid job-board APIs.
 - Keeps a visible separation between companies tracked, feeds resolved, and verified open roles.
 - Searches across all kinds of US roles, not only software or AI.
 - Defaults to US/US-eligible roles, with an optional international expansion path.
@@ -97,8 +97,12 @@ Important files:
 - Ashby public job-board APIs
 - Lever public postings APIs
 - SmartRecruiters public company postings APIs
+- BambooHR public careers lists
+- Breezy public job-board JSON
+- Recruitee public offer APIs
+- Workable public widget APIs
 
-Provider adapters intentionally return a transparent unsupported result for custom career systems. Contributions for Workday, iCIMS, Workable, Breezy, schema.org JobPosting extraction, and company-specific adapters are welcome.
+Provider adapters intentionally return a transparent unsupported result for custom career systems. Contributions for production-grade Workday, iCIMS, Jobvite, Oracle/Taleo, UKG, schema.org JobPosting extraction, and company-specific adapters are welcome.
 
 ## How Launchpad avoids fabricated postings
 

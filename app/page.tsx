@@ -413,7 +413,7 @@ export default function Home() {
   const usJobs = useMemo(() => jobs.filter((job) => job.isUs !== false), [jobs]);
   const internationalJobs = useMemo(() => jobs.filter((job) => job.isUs === false), [jobs]);
   const scopedJobTotal = scopedJobs.length || (includeInternational ? feedSummary.jobs : feedSummary.usJobs || feedSummary.jobs);
-  const scopedCompanyTotal = new Set(scopedJobs.map((job) => job.company)).size || feedSummary.companiesWithMatches;
+  const scopedCompanyTotal = new Set(scopedJobs.map((job) => job.company)).size || (includeInternational ? feedSummary.companiesWithMatches : feedSummary.usCompaniesWithMatches || feedSummary.companiesWithMatches);
   const usJobTotal = usJobs.length || feedSummary.usJobs || 0;
   const internationalJobTotal = internationalJobs.length || feedSummary.internationalJobs || 0;
   const roleCounts = useMemo(() => scopedJobs.reduce((counts, job) => counts.set(job.category, (counts.get(job.category) || 0) + 1), new Map<string, number>()), [scopedJobs]);
@@ -536,7 +536,7 @@ export default function Home() {
         </div>
         <div className="stats">
           <div><strong>{scopedJobTotal}</strong><span>{includeInternational ? "open roles" : "US open roles"}</span></div>
-          <div><strong>{scopedCompanyTotal}</strong><span>hiring companies</span></div>
+          <div><strong>{scopedCompanyTotal}</strong><span>{includeInternational ? "global hiring companies" : "US-visible hiring companies"}</span></div>
           <div><strong>{feedSummary.feedsChecked}</strong><span>feeds checked</span></div>
           <div><strong>{registrySummary.total}</strong><span>companies tracked</span></div>
         </div>
@@ -545,13 +545,12 @@ export default function Home() {
       <section className="workspace">
         <aside>
           <p className="label">US JOBS · ROLE FAMILY</p>
-          {roleFamilies.map((x) => <button key={x} className={mode === x ? "filter active" : "filter"} onClick={() => toggleRoleFamily(x)}>{x}<span>{x === "All roles" ? scopedJobs.length : roleCounts.get(x) || 0}</span></button>)}
-          {mode !== "All roles" && <div className="nestedFilters"><p className="label space">{mode.toUpperCase()} · SPECIALIZATION</p>{specializations.map((x) => <button key={x} className={specialization === x ? "filter active subFilter" : "filter subFilter"} onClick={() => toggleSpecialization(x)}>{x}<span>{specializationCount(x)}</span></button>)}</div>}
+          {roleFamilies.map((x) => <div key={x} className="roleFilterGroup"><button className={mode === x ? "filter active" : "filter"} onClick={() => toggleRoleFamily(x)}>{x}<span>{x === "All roles" ? scopedJobs.length : roleCounts.get(x) || 0}</span></button>{mode === x && x !== "All roles" && <div className="nestedFilters"><p className="label">{x.toUpperCase()} · SPECIALIZATION</p>{specializations.map((specializationLabel) => <button key={specializationLabel} className={specialization === specializationLabel ? "filter active subFilter" : "filter subFilter"} onClick={() => toggleSpecialization(specializationLabel)}>{specializationLabel}<span>{specializationCount(specializationLabel)}</span></button>)}</div>}</div>)}
           <p className="label space">COMPANY SIZE · LIVE ROLES</p>
           {sizes.map((x) => <button key={x} className={size === x ? "filter active" : "filter"} onClick={() => toggleSize(x)}>{x}<span>{sizeCount(x)}</span></button>)}
           <p className="label space">SECTORS</p>
           {sectors.map((x) => <button key={x} className={sector === x ? "filter active" : "filter"} onClick={() => toggleSector(x)}>{x}<span>{x === "All sectors" ? registry.length : registrySectorCounts.get(x) || 0}</span></button>)}
-          <div className="fantastic"><div><span className="pulse"></span><b>Coverage model</b></div><p>This is a forkable local index, not a claim about the whole US market. Watchlist: {registrySummary.total} companies. Free feeds checked: {feedSummary.feedsChecked}. Resolved today: {feedSummary.boardsResolved}. Hiring now in this snapshot: {feedSummary.companiesWithMatches}.</p></div>
+          <div className="fantastic"><div><span className="pulse"></span><b>Coverage model</b></div><p>This is a forkable local index, not a claim about the whole US market. Watchlist: {registrySummary.total} companies. Free feeds checked: {feedSummary.feedsChecked}. Resolved today: {feedSummary.boardsResolved}. US-visible hiring now: {feedSummary.usCompaniesWithMatches ?? scopedCompanyTotal}. Total resolved with international: {feedSummary.companiesWithMatches}.</p></div>
         </aside>
 
         <div className="results">
@@ -572,7 +571,7 @@ export default function Home() {
             <div><b>Free/public sources only</b><span>Official ATS and company-controlled careers feeds; no paid job-board APIs needed for the bundled snapshot.</span></div>
             <div><b>Source-audited postings</b><span>Rows need a provider response, stable source URL, title, location, and original apply link.</span></div>
             <div><b>Dedupe-first index</b><span>Provider job ID first; canonical apply URL and company/title/location are retained as audit checks.</span></div>
-            <div><b>US default, global optional</b><span>{usJobTotal.toLocaleString()} US / US-eligible rows; {internationalJobTotal.toLocaleString()} international rows appear only when enabled.</span></div>
+            <div><b>US default, global optional</b><span>{usJobTotal.toLocaleString()} US / US-eligible rows across {(feedSummary.usCompaniesWithMatches ?? scopedCompanyTotal).toLocaleString()} US-visible companies; {internationalJobTotal.toLocaleString()} international rows appear only when enabled.</span></div>
           </div>
 
           <div className="resultHead">
@@ -603,10 +602,10 @@ export default function Home() {
 
           {view === "audit" && <div className="auditPanel">
             <section><p className="label">SOURCE TRUTH</p><h3>No fabricated postings.</h3><p>Launchpad keeps a row only when it came back from a company-controlled careers feed or ATS endpoint with a stable provider id, title, location, source URL, and apply link. Descriptions are cleaned before display so raw HTML never leaks into the UI.</p></section>
-            <div className="auditGrid"><div><span>US / US-eligible rows</span><strong>{usJobTotal.toLocaleString()}</strong></div><div><span>International rows</span><strong>{internationalJobTotal.toLocaleString()}</strong></div><div><span>Hiring companies shown</span><strong>{auditCompanies.toLocaleString()}</strong></div><div><span>Feeds checked</span><strong>{feedSummary.feedsChecked.toLocaleString()}</strong></div></div>
+            <div className="auditGrid"><div><span>US / US-eligible rows</span><strong>{usJobTotal.toLocaleString()}</strong></div><div><span>International rows</span><strong>{internationalJobTotal.toLocaleString()}</strong></div><div><span>{includeInternational ? "Total resolved companies" : "US-visible companies"}</span><strong>{auditCompanies.toLocaleString()}</strong></div><div><span>Feeds checked</span><strong>{feedSummary.feedsChecked.toLocaleString()}</strong></div></div>
             <section><p className="label">DEDUPE GATES</p><ol><li>Provider job id must be unique when the ATS exposes one.</li><li>Canonical source/apply URLs are retained and reported as audit review signals.</li><li>Company + normalized title + normalized location fingerprints are retained to inspect repost mirrors.</li><li>Rows with leaked HTML, missing title, missing company, missing audit evidence, or invalid URL fail the audit script.</li></ol><code>npm run data:audit</code></section>
             <section><p className="label">CURRENT FREE SOURCES</p><div className="auditSources">{auditSourceCounts.map(([name, count]) => <span key={name}><b>{name}</b><em>{count.toLocaleString()} rows</em></span>)}</div></section>
-            <section><p className="label">COVERAGE HONESTY</p><p>This is not the entire US job market yet. The current snapshot is strongest where official public ATS feeds are easy to resolve: Greenhouse, Ashby, Lever, SmartRecruiters, plus discovered company-controlled feeds. The next broadening pass should add stronger Workday, iCIMS, government, hospital, university, and custom careers-page adapters.</p><div className="auditSources">{auditSectorCounts.map(([name, count]) => <span key={name}><b>{name}</b><em>{count.toLocaleString()} rows</em></span>)}</div></section>
+            <section><p className="label">COVERAGE HONESTY</p><p>This is not the entire US job market yet. The current snapshot is strongest where official public feeds are easy to resolve: Greenhouse, Ashby, Lever, SmartRecruiters, BambooHR, Breezy, Recruitee, and Workable. The next broadening pass should add stronger Workday, iCIMS, Jobvite, Oracle/Taleo, UKG, government, hospital, university, and custom careers-page adapters.</p><div className="auditSources">{auditSectorCounts.map(([name, count]) => <span key={name}><b>{name}</b><em>{count.toLocaleString()} rows</em></span>)}</div></section>
           </div>}
 
           {!filtered.length && view === "roles" && <div className="empty"><b>No roles match that search.</b><p>Try a broader title, skill, or location.</p></div>}

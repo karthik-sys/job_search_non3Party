@@ -18,7 +18,8 @@ const roleFamilies = [
   ["Customer & Support", /\b(support|customer|implementation|technical account|professional services|education|training)\b/i],
   ["Hardware & Robotics", /\b(hardware|mechanical|electrical|firmware|robotics|embedded|avionics|manufacturing engineer)\b/i],
 ];
-const us = /United States|\bUS\b|\bUSA\b|Remote.*U\.S|California|New York|Texas|Washington|Massachusetts|Virginia|Colorado|Illinois|Georgia|Florida|Maryland|Pennsylvania|Oregon|Arizona|North Carolina|District of Columbia|San Francisco|Seattle|Boston|Austin|Chicago|Atlanta|\b(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|IA|ID|IL|IN|KS|KY|LA|MA|MD|ME|MI|MN|MO|MS|MT|NC|ND|NE|NH|NJ|NM|NV|NY|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VA|VT|WA|WI|WV|WY|DC)\b/;
+const us = /United States|\bU\.?S\.?\b|\bUSA\b|Remote.*U\.?S|Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|Delaware|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Ohio|Oklahoma|Oregon|Pennsylvania|Rhode Island|South Carolina|South Dakota|Tennessee|Texas|Utah|Vermont|Virginia|Washington|West Virginia|Wisconsin|Wyoming|District of Columbia|San Francisco|Seattle|Boston|Austin|Chicago|Atlanta|Denver|Dallas|Houston|Phoenix|Philadelphia|Pittsburgh|Raleigh|Charlotte|Portland|Nashville|San Diego|San Jose|Los Angeles|Newark|Wilmington|Fremont|Boulder|Cambridge|Palo Alto|Santa Clara|Mountain View|Menlo Park|Redwood City|San Mateo|Miami|Tampa|Orlando|Detroit|Minneapolis|Salt Lake City|Provo|Las Vegas|Arlington|McLean|Reston|Lehi|Stamford|Cleveland|Carmel|Burbank|Redmond|Olympia|Grand Rapids|Tyler|Chilton|Stennis Space Center|\b(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|IA|ID|IL|IN|KS|KY|LA|MA|MD|ME|MI|MN|MO|MS|MT|NC|ND|NE|NH|NJ|NM|NV|NY|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VA|VT|WA|WI|WV|WY|DC)\b/;
+const nonUsLocation = /\b(Canada|United Kingdom|UK|Ireland|India|Japan|Singapore|Colombia|Mexico|MX|France|Germany|Netherlands|Estonia|Poland|Krakow|Dublin|Amsterdam|Bulgaria|Sofia|Spain|Portugal|Brazil|Argentina|Australia|New Zealand|Philippines|Indonesia|Malaysia|Thailand|Vietnam|China|Korea|Taiwan|Hong Kong|Israel|UAE|Dubai|South Africa|APAC|EMEA|Europe|Montreal|Toronto|Uruguay|Gurugram|London|England|Barcelona|Stockholm|Sweden|Roma|Rome|Italy|Napoli|Modena|Campinas|Joinville|Celaya|Redenção|Québec|Quebec|Karlsruhe|Frankfurt|Dresden|München|Munich|Erlangen|Essen|Düsseldorf|Dusseldorf|Rostock|Berlin|Hannover|Hamburg|Shenzhen|San Salvador|Duran|Saltillo)\b/i;
 const ALL_MARKETS = process.argv.includes('--include-international');
 const skillPatterns = [
   ["Python", /\bpython\b/i],
@@ -104,6 +105,8 @@ const slugFromLink = (link, provider) => {
   try {
     const url = new URL(link);
     const parts = url.pathname.split('/').filter(Boolean);
+    const workdayMarker = parts.findIndex((part) => /^wday$/i.test(part));
+    if (provider === 'workday' && workdayMarker >= 0 && /^cxs$/i.test(parts[workdayMarker + 1] || "")) return `${url.hostname}|${parts[workdayMarker + 2] || url.hostname.split('.')[0]}|${parts[workdayMarker + 3] || ''}`;
     if (provider === 'greenhouse') {
       if (url.hostname.includes('boards-api.greenhouse.io')) return parts[2] || '';
       return parts[0] || '';
@@ -115,6 +118,14 @@ const slugFromLink = (link, provider) => {
     if (provider === 'bamboohr') return url.hostname.replace(/\.bamboohr\.com$/i, '');
     if (provider === 'recruitee') return url.hostname.replace(/\.recruitee\.com$/i, '');
     if (provider === 'personio') return url.hostname.replace(/\.jobs\.personio\.com$/i, '');
+    if (provider === 'workable') {
+      const applyIndex = parts.findIndex((part) => part.toLowerCase() === "apply");
+      if (applyIndex >= 0) return parts[applyIndex + 1] || "";
+      const companyIndex = parts.findIndex((part) => part.toLowerCase() === "company");
+      if (companyIndex >= 0) return parts[companyIndex + 1] || "";
+      return parts[0] || "";
+    }
+    if (provider === 'zoho') return url.hostname.replace(/\.zohorecruit\.(com|in)$/i, '');
     if (provider === 'workday') {
       const host = url.hostname;
       const tenant = host.split('.')[0];
@@ -134,6 +145,8 @@ const providerFromLink = (link, fallback) => {
   if (/bamboohr\.com/.test(link)) return 'bamboohr';
   if (/recruitee\.com/.test(link)) return 'recruitee';
   if (/personio\.com/.test(link)) return 'personio';
+  if (/workable\.com/.test(link)) return 'workable';
+  if (/zohorecruit\.(com|in)/.test(link)) return 'zoho';
   return fallback;
 };
 const rows = [];
@@ -141,7 +154,7 @@ const seenBoards = new Set();
 for (const company of registry) {
   for (const link of company.careersLinks || []) {
     const ats = providerFromLink(link, company.provider);
-    if (!['greenhouse','lever','ashby','smartrecruiters','workday','breezy','bamboohr','recruitee','personio'].includes(ats)) continue;
+    if (!['greenhouse','lever','ashby','smartrecruiters','workday','breezy','bamboohr','recruitee','personio','workable','zoho'].includes(ats)) continue;
     const slug = slugFromLink(link, ats);
     if (!slug) continue;
     const key = `${ats}:${slug}`;
@@ -162,6 +175,8 @@ function providerLabel(ats) {
     bamboohr: "BambooHR",
     recruitee: "Recruitee",
     personio: "Personio",
+    workable: "Workable",
+    zoho: "Zoho Recruit",
   })[ats] || ats;
 }
 
@@ -174,11 +189,13 @@ function boardRequest(row) {
   if (row.ats === 'bamboohr') return { url: `https://${row.slug}.bamboohr.com/careers/list` };
   if (row.ats === 'recruitee') return { url: `https://${row.slug}.recruitee.com/api/offers/` };
   if (row.ats === 'personio') return { url: `https://${row.slug}.jobs.personio.com/xml`, text: true };
+  if (row.ats === 'workable') return { url: `https://apply.workable.com/api/v1/widget/accounts/${row.slug}?details=true` };
+  if (row.ats === 'zoho') return { url: `https://${row.slug}.zohorecruit.com/recruit/v2/public/Job_Openings?pagename=Careers&source=CareerSite` };
   if (row.ats === 'workday') {
     const [host, tenant, site] = row.slug.split('|');
     return {
       url: `https://${host}/wday/cxs/${tenant}/${site}/jobs`,
-      init: { method: "POST", headers: { "content-type": "application/json", "user-agent": "Karthik private job research dashboard" }, body: JSON.stringify({ appliedFacets: {}, limit: 100, offset: 0, searchText: "" }) },
+      init: { method: "POST", headers: { "content-type": "application/json", "accept": "application/json", "user-agent": "Mozilla/5.0 LaunchpadCareers/1.0" }, body: JSON.stringify({ appliedFacets: {}, limit: 100, offset: 0, searchText: "" }) },
       workday: { host, tenant, site },
     };
   }
@@ -188,6 +205,8 @@ function boardRequest(row) {
 function rawJobsFromData(row, data) {
   if (row.ats === 'bamboohr') return data.result || data.jobs || [];
   if (row.ats === 'recruitee') return data.offers || data.jobs || [];
+  if (row.ats === 'workable') return data.jobs || [];
+  if (row.ats === 'zoho') return data.data || [];
   if (row.ats === 'workday') return data.jobPostings || data.jobs || [];
   return Array.isArray(data) ? data : data.jobs || data.content || [];
 }
@@ -202,7 +221,9 @@ function normalizeJob(row, j) {
   const category = classify(title);
   const inferredSector = inferSector(title, content, row.sector);
   const remote = /remote/i.test(`${location} ${title}`);
-  const isUs = us.test(location) || (remote && /us|united states|us-hiring-signal|verified-seed/i.test(`${row.confidence} ${location}`));
+  const locationText = String(location || "");
+  const explicitInternational = nonUsLocation.test(locationText) && !/\bUnited States\b|\bU\.?S\.?\b|\bUSA\b/i.test(locationText);
+  const isUs = !explicitInternational && (us.test(`${locationText} ${title}`) || (remote && /us|united states|us-hiring-signal|verified-seed/i.test(`${row.confidence} ${locationText}`)));
   const label = providerLabel(row.ats);
   let postingUrl = humanPostingUrl(row, j, title);
   if (row.ats === 'workday') {
@@ -213,6 +234,8 @@ function normalizeJob(row, j) {
   if (row.ats === 'breezy') postingUrl = j.url || j.apply_url || `https://${row.slug}.breezy.hr/p/${j.friendly_id || j._id || slugify(title)}`;
   if (row.ats === 'bamboohr') postingUrl = j.url || j.applyUrl || `https://${row.slug}.bamboohr.com/careers/${j.id || j.jobOpeningId || ""}`;
   if (row.ats === 'recruitee') postingUrl = j.careers_url || j.url || `https://${row.slug}.recruitee.com/o/${j.slug || slugify(title)}`;
+  if (row.ats === 'workable') postingUrl = j.url || j.shortlink || j.application_url || `https://apply.workable.com/j/${j.shortcode || ""}`;
+  if (row.ats === 'zoho') postingUrl = j.$url || j.url || j.Job_Opening_URL || `https://${row.slug}.zohorecruit.com/jobs/Careers`;
   if (!ALL_MARKETS && !isUs) return null;
   if (!title || !postingUrl || /api\./i.test(postingUrl)) return null;
   return {id:`${row.ats}-${row.slug}-${j.id || j.uuid || j._id || j.ref || j.jobUrl || j.hostedUrl || j.externalPath || postingUrl}`,source:`Direct ${label}`,company:row.company,companySize:companySize(row.company,row.size),sector:inferredSector,title,category,location:typeof location==='string'&&location?location:(isUs?'United States / Remote':'Remote / Global'),remote,isUs,type:j.categories?.commitment || j.type?.name || j.employment_type || '',level:j.experience?.name || '',date,salary:'',tags:requirements(title,content,category,inferredSector),url:postingUrl,summary:summarize(content),companyEvidence:`Verified official posting: returned by the ${label} careers feed for ${row.slug} with a user-openable source link.`};
@@ -221,7 +244,9 @@ function normalizeJob(row, j) {
 async function fetchBoard(row){
   const request = boardRequest(row);
   try {
-    const res = await fetch(request.url, request.init || {headers:{'user-agent':'Karthik private job research dashboard'}});
+    const timeout = AbortSignal.timeout(12000);
+    const init = request.init || {headers:{'user-agent':'Karthik private job research dashboard'}};
+    const res = await fetch(request.url, { ...init, signal: timeout });
     if (!res.ok) return {...row,status:res.status,jobs:[]};
     if (request.text) {
       const rawText = await res.text();
