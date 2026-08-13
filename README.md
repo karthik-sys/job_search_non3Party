@@ -69,7 +69,29 @@ The public UI has two scan modes:
 - `All detected emails` — previews application-looking email updates even before a user marks roles as applied.
 - `Matched to applied` — limits matching to roles the user explicitly marked as applied.
 
-The live demo does not directly access a user's Gmail. A production release should use user-owned OAuth, request read-only mail scopes by default, show previews before import, store only minimal metadata, and provide disconnect/delete controls.
+Launchpad includes a Google OAuth flow for user-owned Gmail access. It requests only:
+
+```text
+https://www.googleapis.com/auth/gmail.readonly
+openid
+email
+```
+
+Required environment variables:
+
+```bash
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GMAIL_COOKIE_SECRET=at-least-32-characters
+```
+
+Google OAuth redirect URI:
+
+```text
+https://YOUR_SITE_DOMAIN/api/gmail/callback
+```
+
+The app stores the Gmail refresh token in an encrypted HttpOnly cookie for the demo implementation. A hardened public release should move refresh tokens to durable per-user storage, complete Google OAuth app verification, show previews before import, store only minimal metadata, and provide disconnect/delete controls.
 
 ## Security and privacy model
 

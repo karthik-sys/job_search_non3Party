@@ -31,6 +31,20 @@ type AppliedRecord = {
   appliedAt: string;
   notes: string;
 };
+type GmailStatus = { configured: boolean; missing: string[]; connected: boolean; email: string | null; connectedAt: string | null };
+type GmailUpdate = {
+  id: string;
+  company: string;
+  role: string;
+  signal: string;
+  status: AppliedRecord["status"];
+  subject: string;
+  from: string;
+  date: string;
+  snippet: string;
+  confidence: "High" | "Medium" | "Review";
+  sourceUrl: string;
+};
 
 const statusOptions: AppliedRecord["status"][] = ["Applied", "Assessment", "Interview", "Offer", "Rejected", "Withdrawn"];
 const interestAliases: Record<string, string[]> = {
@@ -134,6 +148,10 @@ export default function Home() {
   const [gmailDays, setGmailDays] = useState("30");
   const [gmailMode, setGmailMode] = useState<"all" | "applied">("all");
   const [gmailScanned, setGmailScanned] = useState(false);
+  const [gmailStatus, setGmailStatus] = useState<GmailStatus | null>(null);
+  const [gmailUpdates, setGmailUpdates] = useState<GmailUpdate[]>([]);
+  const [gmailLoading, setGmailLoading] = useState(false);
+  const [gmailError, setGmailError] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [discovering, setDiscovering] = useState(false);
@@ -169,6 +187,11 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem("launchpad-applied", JSON.stringify(applied));
   }, [applied]);
+
+  useEffect(() => {
+    if (!showGmail) return;
+    fetch("/api/gmail/status").then((response) => response.json()).then(setGmailStatus).catch(() => setGmailStatus(null));
+  }, [showGmail]);
 
   async function discoverCompany(e: FormEvent) {
     e.preventDefault();
@@ -213,6 +236,40 @@ export default function Home() {
       else next[job.id] = { jobId: job.id, status: "Applied", appliedAt: new Date().toISOString(), notes: "" };
       return next;
     });
+  }
+
+  async function scanGmail() {
+    setGmailLoading(true);
+    setGmailError("");
+    setGmailScanned(true);
+    setGmailUpdates([]);
+    try {
+      if (!gmailStatus?.connected) {
+        setGmailLoading(false);
+        return;
+      }
+      const appliedCompanies = appliedJobs.map((job) => job.company);
+      const appliedRoles = appliedJobs.map((job) => job.title);
+      const response = await fetch("/api/gmail/updates", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ days: gmailDays, mode: gmailMode, companies: appliedCompanies, roles: appliedRoles }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error ?? "Gmail scan failed.");
+      setGmailUpdates(data.updates ?? []);
+    } catch (e) {
+      setGmailError(e instanceof Error ? e.message : "Gmail scan failed.");
+    } finally {
+      setGmailLoading(false);
+    }
+  }
+
+  async function disconnectGmail() {
+    await fetch("/api/gmail/disconnect", { method: "POST" });
+    setGmailStatus((status) => status ? { ...status, connected: false, email: null, connectedAt: null } : status);
+    setGmailUpdates([]);
+    setGmailScanned(false);
   }
 
   const roleFamilies = ["All roles", ...Array.from(new Set(jobs.map((j) => j.category))).sort()];
@@ -266,7 +323,17 @@ export default function Home() {
   }).sort((a, b) => b.count - a.count), [jobs]);
   const selectedNebulaCluster = nebulaSectors.find((cluster) => cluster.sector === selectedNebulaSector) ?? nebulaSectors[0];
   const selectedNebulaCompanyNode = selectedNebulaCluster?.companies.find((company) => company.company === selectedNebulaCompany) ?? selectedNebulaCluster?.companies[0];
-  const visibleNebulaCompanies = selectedNebulaCluster?.companies.slice(0, nebulaClarity === "all" ? 36 : 18) ?? [];
+  const visibleNebulaCompanies = selectedNebulaCluster?.companies.slice(0, 50) ?? [];
+  const nebulaInteractions = selectedNebulaCompanyNode && selectedNebulaCluster ? selectedNebulaCluster.companies
+    .filter((company) => company.company !== selectedNebulaCompanyNode.company)
+    .map((company) => {
+      const sharedTags = company.tags.filter((tag) => selectedNebulaCompanyNode.tags.includes(tag));
+      const sharedRoles = company.roles.filter((role) => selectedNebulaCompanyNode.roles.includes(role));
+      return { company, sharedTags, sharedRoles, score: sharedTags.length * 3 + sharedRoles.length * 2 + Math.min(3, company.count / 50) };
+    })
+    .filter((row) => row.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 8) : [];
 
   return (
     <main>
@@ -351,7 +418,7 @@ export default function Home() {
 
       {showTune && <div className="drawerBackdrop" onClick={() => setShowTune(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowTune(false)}>×</button><p className="eyebrow">OPTIONAL · USER CONTROLLED</p><h2>Tune the noise out.</h2><p>Paste résumé text for suggested interest areas. Nothing is stored, and every suggestion can be ignored or replaced with your own.</p><form onSubmit={analyzePreferences}><label>Résumé text<textarea value={resumeText} onChange={(e) => setResumeText(e.target.value)} placeholder="Paste résumé text here..." /></label><button className="apply">Suggest interest areas</button></form>{suggestions.length > 0 && <div className="suggestions"><p className="label">SUGGESTED - CHOOSE ANY</p>{suggestions.map((s) => <button key={s.id} className={preferences.includes(s.label) ? "chosen" : ""} onClick={() => addPreference(s.label)}><b>{s.label}</b><span>{s.signals.join(" · ")}</span><em>{preferences.includes(s.label) ? "Added" : "+ Add"}</em></button>)}</div>}<div className="customPref"><input value={customPreference} onChange={(e) => setCustomPreference(e.target.value)} placeholder="Create your own interest..." /><button onClick={() => { if (customPreference.trim()) { addPreference(customPreference.trim()); setCustomPreference(""); } }}>Add</button></div><small>Interests now affect filters when Use interests is on. Résumé text is analyzed transiently and is not saved.</small></section></div>}
 
-      {showGmail && <div className="drawerBackdrop" onClick={() => setShowGmail(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowGmail(false)}>×</button><p className="eyebrow">OPTIONAL GMAIL SYNC</p><h2>Email-aware tracking.</h2><p>This deployed demo cannot read Gmail directly yet. Use the demo preview to test matching UX, or use matched mode for roles you marked applied. Real Gmail rows must show sender, subject, date, and an open-email link.</p><div className="gmailTruth">Demo data only · not from your Gmail inbox</div><div className="gmailModeTabs"><button className={gmailMode === "all" ? "active" : ""} onClick={() => { setGmailMode("all"); setGmailScanned(false); }}>Demo discovery</button><button className={gmailMode === "applied" ? "active" : ""} onClick={() => { setGmailMode("applied"); setGmailScanned(false); }}>Matched to applied</button></div><div className="gmailControls"><label>Look back<select value={gmailDays} onChange={(e) => { setGmailDays(e.target.value); setGmailScanned(false); }}><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option></select></label><button className="apply" onClick={() => setGmailScanned(true)}>{gmailMode === "all" ? "Preview demo matching" : "Preview matched updates"}</button></div><div className="gmailMock"><div><b>Detected update types</b><span>Application received · Assessment · Interview · Offer · Rejection</span></div><div><b>Matching strategy</b><span>{gmailMode === "all" ? "Uses job-dashboard rows only. It does not claim an email was found." : "Only simulates updates for roles you already marked as applied."}</span></div></div>{gmailScanned && <div className="emailResults"><p className="label">DEMO PREVIEW · LAST {gmailDays} DAYS · {gmailMode === "all" ? "NOT GMAIL" : "MATCHED ONLY"}</p>{mockEmailUpdates.length ? mockEmailUpdates.map(({ job, status, signal, confidence, matched }) => <article key={job.id}><div><b>{signal}</b><span>{job.company} · {job.title}</span><div className="emailBadges"><em>Demo row</em><em>{confidence} match confidence</em><em>{matched ? "Already applied" : "Not marked applied"}</em></div></div><button onClick={() => setApplied((records) => ({ ...records, [job.id]: { ...(records[job.id] || { jobId: job.id, appliedAt: new Date().toISOString(), notes: "" }), status: status as AppliedRecord["status"] } }))}>Simulate {status}</button></article>) : <div className="empty smallEmpty"><b>{gmailMode === "applied" ? "No marked-applied roles to match yet." : "No demo matches in this window."}</b><p>{gmailMode === "applied" ? "Switch to Demo discovery to test before marking roles." : "Production OAuth should search real Gmail and attach source links."}</p></div>}</div>}<small>Important: rows above are synthetic demo matches unless they include a Gmail sender, subject/date, and open-email link. A real public release should start user-owned OAuth, import only approved metadata, and let users disconnect/delete synced email data.</small></section></div>}
+      {showGmail && <div className="drawerBackdrop" onClick={() => setShowGmail(false)}><section className="onboard" onClick={(e) => e.stopPropagation()}><button className="close" onClick={() => setShowGmail(false)}>×</button><p className="eyebrow">OPTIONAL GMAIL SYNC</p><h2>Email-aware tracking.</h2><p>Connect Gmail with Google OAuth read-only access. Real imported rows show sender, subject, date, and an open-email link. If OAuth is not configured, Launchpad keeps demo rows clearly separated.</p>{gmailStatus?.connected ? <div className="gmailTruth real">Connected to {gmailStatus.email ?? "Gmail"} · read-only</div> : <div className="gmailTruth">{gmailStatus?.configured ? "Gmail OAuth ready · connect to scan your inbox" : `Gmail OAuth not configured${gmailStatus?.missing?.length ? ` · missing ${gmailStatus.missing.join(", ")}` : ""}`}</div>}<div className="gmailModeTabs"><button className={gmailMode === "all" ? "active" : ""} onClick={() => { setGmailMode("all"); setGmailScanned(false); }}>All Gmail updates</button><button className={gmailMode === "applied" ? "active" : ""} onClick={() => { setGmailMode("applied"); setGmailScanned(false); }}>Matched to applied</button></div><div className="gmailControls"><label>Look back<select value={gmailDays} onChange={(e) => { setGmailDays(e.target.value); setGmailScanned(false); }}><option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option><option value="60">Last 60 days</option><option value="90">Last 90 days</option></select></label>{gmailStatus?.connected ? <button className="apply" onClick={scanGmail} disabled={gmailLoading}>{gmailLoading ? "Scanning Gmail..." : "Scan real Gmail"}</button> : <a className="apply" href="/api/gmail/auth">Connect Gmail with Google →</a>}</div>{gmailStatus?.connected && <button className="ghost disconnectGmail" onClick={disconnectGmail}>Disconnect Gmail</button>}{gmailError && <div className="discoveryError">{gmailError}</div>}<div className="gmailMock"><div><b>Read-only scope</b><span>Gmail metadata, sender, subject, snippets, and source links. No send, archive, trash, or label access.</span></div><div><b>Matching strategy</b><span>{gmailMode === "all" ? "Searches recent application-looking messages in Gmail." : "Searches Gmail for companies and roles you marked as applied."}</span></div></div>{gmailScanned && <div className="emailResults"><p className="label">{gmailStatus?.connected ? "REAL GMAIL" : "DEMO PREVIEW"} · LAST {gmailDays} DAYS · {gmailMode === "all" ? "ALL UPDATES" : "MATCHED ONLY"}</p>{gmailStatus?.connected ? (gmailUpdates.length ? gmailUpdates.map((update) => <article key={update.id}><div><b>{update.signal}</b><span>{update.company} · {update.role}</span><div className="emailSource"><span>{update.subject}</span><span>{update.from}</span><span>{update.date}</span></div><div className="emailBadges"><em>Gmail source</em><em>{update.confidence} confidence</em></div></div><a href={update.sourceUrl} target="_blank" rel="noreferrer">Open email ↗</a></article>) : <div className="empty smallEmpty"><b>No Gmail updates found.</b><p>Try a longer lookback window or switch scan mode.</p></div>) : (mockEmailUpdates.length ? mockEmailUpdates.map(({ job, status, signal, confidence, matched }) => <article key={job.id}><div><b>{signal}</b><span>{job.company} · {job.title}</span><div className="emailBadges"><em>Demo row</em><em>{confidence} match confidence</em><em>{matched ? "Already applied" : "Not marked applied"}</em></div></div><button onClick={() => setApplied((records) => ({ ...records, [job.id]: { ...(records[job.id] || { jobId: job.id, appliedAt: new Date().toISOString(), notes: "" }), status: status as AppliedRecord["status"] } }))}>Simulate {status}</button></article>) : <div className="empty smallEmpty"><b>No demo matches in this window.</b><p>Connect Gmail to scan real application updates.</p></div>)}</div>}<small>OAuth tokens are stored in an encrypted HttpOnly cookie for this demo. A hardened public release should move refresh tokens to durable per-user storage and complete Google verification.</small></section></div>}
       {showNebula && <div className="marketOverlay"><button className="nebulaClose" onClick={() => setShowNebula(false)}>×</button><section className="marketShell">
         <header className="marketChrome"><div><p className="eyebrow">US MARKET GRAPH</p><h2>Company Nebula</h2><p>Industries are graph pillars. Companies orbit the selected market, sized by active official roles and tagged by what their postings say they work on.</p></div><div className="marketStats"><span>{nebulaSectors.length} industries</span><span>{feedSummary.companiesWithMatches} hiring companies</span><span>{feedSummary.jobs} roles</span></div></header>
         <div className="marketToolbar"><div><button className={nebulaClarity === "markets" ? "active" : ""} onClick={() => setNebulaClarity("markets")}>Markets</button><button className={nebulaClarity === "selection" ? "active" : ""} onClick={() => setNebulaClarity("selection")}>Selection</button><button className={nebulaClarity === "all" ? "active" : ""} onClick={() => setNebulaClarity("all")}>All nodes</button></div><label>Rotate<input type="range" min="-55" max="55" value={nebulaRotation} onChange={(e) => setNebulaRotation(Number(e.target.value))} /></label><label>Tilt<input type="range" min="42" max="76" value={nebulaTilt} onChange={(e) => setNebulaTilt(Number(e.target.value))} /></label><label>Zoom<input type="range" min="0.75" max="1.35" step="0.05" value={nebulaZoom} onChange={(e) => setNebulaZoom(Number(e.target.value))} /></label></div>
@@ -367,9 +434,10 @@ export default function Home() {
             {nebulaClarity !== "markets" && visibleNebulaCompanies.map((company, i) => <button key={company.company} className={`marketCompanyNode ${selectedNebulaCompanyNode?.company === company.company ? "active" : ""}`} style={{ "--angle": `${(i * 137.5) % 360}deg`, "--radius": `${118 + (i % 3) * 52 + Math.floor(i / 12) * 28}px`, "--mass": Math.min(1.75, 0.72 + company.count / Math.max(1, visibleNebulaCompanies[0]?.count || 1) * 0.9) } as CSSProperties} onClick={() => setSelectedNebulaCompany(company.company)} title={`${company.company}: ${company.tags.join(" · ")}`}><strong>{company.company.slice(0, 2)}</strong><span>{company.company}</span><em>{company.count}</em></button>)}
           </div></div>
           <aside className="marketInspector">
-            <p className="eyebrow">SELECTED MARKET</p><h3>{selectedNebulaCluster?.sector ?? "US job market"}</h3><p>{selectedNebulaCluster ? `${selectedNebulaCluster.count.toLocaleString()} roles across ${selectedNebulaCluster.companies.length} visible hiring companies. Tags are inferred from official postings, not third-party summaries.` : "Choose an industry node to inspect company contribution signals."}</p>
+            <p className="eyebrow">SELECTED MARKET</p><h3>{selectedNebulaCluster?.sector ?? "US job market"}</h3><p>{selectedNebulaCluster ? `${selectedNebulaCluster.count.toLocaleString()} roles across ${selectedNebulaCluster.companies.length} resolved hiring companies. Showing up to the top 50 company nodes for this sector. Tags are inferred from official postings, not third-party summaries.` : "Choose an industry node to inspect company contribution signals."}</p>
             {selectedNebulaCluster && <div className="marketTags">{selectedNebulaCluster.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>}
             {selectedNebulaCompanyNode && <div className="companyLens"><span>Company lens</span><h4>{selectedNebulaCompanyNode.company}</h4><b>{selectedNebulaCompanyNode.count} open roles</b><div>{selectedNebulaCompanyNode.tags.map((tag) => <em key={tag}>{tag}</em>)}</div><button onClick={() => { setQuery(selectedNebulaCompanyNode.company); setSector("All sectors"); setView("companies"); setShowNebula(false); }}>Open company results →</button></div>}
+            {nebulaInteractions.length > 0 && <div className="marketInteractions"><b>How nodes interact</b>{nebulaInteractions.map(({ company, sharedTags, sharedRoles }) => <button key={company.company} onClick={() => setSelectedNebulaCompany(company.company)}><span>{company.company}</span><em>{[...sharedTags, ...sharedRoles].slice(0, 4).join(" · ")}</em><strong>{company.count} roles</strong></button>)}<small>Interaction here means shared official-posting tags or role families inside the selected sector.</small></div>}
             <div className="marketList"><b>Industries</b>{nebulaSectors.map((cluster) => <button key={cluster.sector} className={selectedNebulaCluster?.sector === cluster.sector ? "active" : ""} onClick={() => { setSelectedNebulaSector(cluster.sector); setSelectedNebulaCompany(null); setNebulaClarity("selection"); }}><span>{cluster.sector}</span><em>{cluster.companies.length} companies · {cluster.count.toLocaleString()} roles</em></button>)}</div>
           </aside>
         </div>
