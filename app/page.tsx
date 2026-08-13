@@ -62,7 +62,9 @@ const interestAliases: Record<string, string[]> = {
   "Backend & Distributed Systems": ["Software Engineering", "platform", "backend", "infrastructure", "distributed"],
   "Software Engineering": ["Software Engineering"],
   "Product & Design": ["Product & Design"],
-  "Go-to-Market": ["Go-to-Market", "sales", "marketing", "customer success"],
+  "Customer Success & Solutions": ["Customer Success & Solutions", "customer success", "technical account", "implementation", "solutions"],
+  "Customer Support": ["Customer Support", "support", "customer care", "helpdesk"],
+  "Go-to-Market": ["Go-to-Market", "sales", "marketing", "revenue", "partnerships"],
   Security: ["Security", "trust", "risk", "privacy"],
   Operations: ["Operations", "strategy", "supply chain"],
 };
@@ -202,8 +204,9 @@ const roleSpecialization = (job: Job) => {
   if (/qa|quality|test engineer|automation engineer|verification|validation|reliability test/.test(text)) return "QA, Test & Validation";
   if (/product manager|program manager|project manager|scrum|roadmap/.test(text)) return "Product & Program";
   if (/designer|design|ux|user experience|visual|brand|content design|researcher/.test(text)) return "Design & Research";
-  if (/sales|account executive|revenue|business development|customer success|solutions|pre[ -]?sales/.test(text)) return "Sales, Success & Solutions";
-  if (/support|customer experience|customer care|help|technical support|implementation/.test(text)) return "Support & Implementation";
+  if (/technical account|customer success|implementation|solutions? (engineer|architect|consultant|manager)|professional services|sales engineer|pre[ -]?sales|post[ -]?sales|customer solution|customer education/.test(text)) return "Technical Success & Solutions";
+  if (/sales|account executive|revenue|business development|partnership|commercial|marketing|growth/.test(text)) return "Sales & Revenue";
+  if (/support|customer experience|customer care|help.?desk|contact center|call center|service desk|technical support/.test(text)) return "Support & Care";
   if (/operations|supply|logistics|manufacturing|procurement|warehouse|facilities/.test(text)) return "Operations & Supply Chain";
   if (/finance|accounting|legal|people|hr|recruit|talent|payroll|counsel/.test(text)) return "Business Operations";
   return "General / Other";
@@ -216,8 +219,9 @@ const canonicalSpecialization = (job: Job, selectedFamily: string) => {
   const spec = specialty.toLowerCase();
   if (family.includes("software") && ["sales, success & solutions", "support & implementation", "business operations", "operations & supply chain", "design & research", "product & program"].includes(spec)) return "General Software Engineering";
   if (family.includes("hardware") && !/(embedded|hardware|robotics|qa|test|validation|operations)/.test(spec)) return "Hardware & Robotics - General";
-  if (family.includes("customer") && !/(support|sales|success|implementation)/.test(spec)) return "Customer & Support - General";
-  if (family.includes("go-to-market") && !/(sales|success|solutions|product|business)/.test(spec)) return "Go-to-Market - General";
+  if (family.includes("customer success") && !/(technical success|solutions|sales|revenue|product|business)/.test(spec)) return "Customer Success & Solutions - General";
+  if (family.includes("customer support") && !/(support|care|technical success|solutions)/.test(spec)) return "Customer Support - General";
+  if (family.includes("go-to-market") && !/(sales|revenue|product|business)/.test(spec)) return "Go-to-Market - General";
   if (family.includes("machine learning") && !/(machine learning|data engineering|backend|infrastructure)/.test(spec)) return "ML & AI - General";
   return specialty;
 };

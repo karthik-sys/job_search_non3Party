@@ -6,6 +6,21 @@ const manifestPath = `${snapshotDir}/manifest.json`;
 const partSize = 760_000;
 const usLocation = /United States|\bUS\b|\bUSA\b|Remote.*U\.?S|Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|Delaware|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Ohio|Oklahoma|Oregon|Pennsylvania|Rhode Island|South Carolina|South Dakota|Tennessee|Texas|Utah|Vermont|Virginia|Washington|West Virginia|Wisconsin|Wyoming|District of Columbia|San Francisco|Seattle|Boston|Austin|Chicago|Atlanta|Denver|Dallas|Houston|Phoenix|Philadelphia|Pittsburgh|Raleigh|Charlotte|Portland|Nashville|San Diego|San Jose|Los Angeles|Newark|Wilmington|Fremont|Boulder|Cambridge|Palo Alto|Santa Clara|Mountain View|Menlo Park|Redwood City|San Mateo|Miami|Tampa|Orlando|Detroit|Minneapolis|Salt Lake City|Provo|Las Vegas|Arlington|McLean|Reston|Lehi|Stamford|Cleveland|Carmel|Stennis Space Center|\b(AL|AK|AZ|AR|CA|CO|CT|DE|FL|GA|HI|IA|ID|IL|IN|KS|KY|LA|MA|MD|ME|MI|MN|MO|MS|MT|NC|ND|NE|NH|NJ|NM|NV|NY|OH|OK|OR|PA|RI|SC|SD|TN|TX|UT|VA|VT|WA|WI|WV|WY|DC)\b/i;
 const nonUsLocation = /\b(Canada|United Kingdom|UK|Ireland|India|Japan|Singapore|Colombia|Mexico|MX|France|Germany|Netherlands|Estonia|Poland|Krakow|Kraków|Poznań|Łódź|Lodz|Katowice|Dublin|Amsterdam|Bulgaria|Sofia|Spain|Portugal|Brazil|Argentina|Australia|New Zealand|Philippines|Indonesia|Malaysia|Thailand|Vietnam|China|Korea|Taiwan|Hong Kong|Israel|UAE|Dubai|South Africa|APAC|EMEA|Europe|Montreal|Toronto|Kitchener|Pointe-Claire|Pont-Rouge|Québec|Quebec|Uruguay|Gurugram|London|England|Barcelona|Stockholm|Sweden|Roma|Rome|Italy|Napoli|Modena|Campinas|Joinville|Celaya|Redenção|Karlsruhe|Frankfurt|Dresden|München|Munich|Erlangen|Essen|Düsseldorf|Dusseldorf|Rostock|Berlin|Hannover|Hamburg|Shenzhen|San Salvador|Duran|Saltillo|Braga|São Paulo|Sao Paulo|Buenos Aires|Bengaluru|Bangalore|Pune|Belo Horizonte|Budapest|St\.? Julian'?s|Tokyo|Warsaw|Ingenbohl|Bangkok|Abidjan|Kuala Lumpur|Paris|Cairo|Lima|Paulínia|Hyderabad|Madrid|Sydney|Riga|Sorocaba|Gunzenhausen|Reutlingen|Cape Town|Ulm|Cuiaba|Medellín|Nova Lima|Barueri|Vienna|San Joaquín|Pudahuel|Birr|Casablanca|Manila|New Delhi|Bogota|Prague|Czechia|Belgrade|Serbia|Vicente López|Astana|Aigues-Vives)\b/i;
+const roleFamilies = [
+  ["Retail & Merchandising", /\b(merchant|merchandising|buyer|buying|retail planning|assortment|inventory|pricing|category manager)\b/i],
+  ["Customer Success & Solutions", /\b(technical account|customer success|implementation|solutions? (engineer|architect|consultant|manager)|professional services|sales engineer|pre[- ]?sales|post[- ]?sales|customer solution|customer education)\b/i],
+  ["Customer Support", /\b(support|customer care|customer experience|help.?desk|contact center|call center|service desk|technical support)\b/i],
+  ["Machine Learning & AI", /\b(machine learning|\bml\b|artificial intelligence|\bai\b|applied scientist|research scientist|data scientist|data engineer|analytics engineer|computer vision|nlp|llm|generative ai|mlops|data platform)\b/i],
+  ["Software Engineering", /\b(software engineer|software developer|full.?stack|front.?end|back.?end|mobile engineer|mobile developer|ios|android|platform engineer|devops|site reliability|\bsre\b|infrastructure engineer|cloud engineer|systems engineer|developer experience|software architect|engineering manager|qa engineer|test engineer)\b/i],
+  ["Product & Design", /\b(product manager|program manager|project manager|product designer|ux|ui|user researcher|design manager|brand designer|content designer)\b/i],
+  ["Security", /\b(security|trust and safety|fraud|risk|compliance|privacy|threat|incident response)\b/i],
+  ["Go-to-Market", /\b(sales|account executive|marketing|growth|demand generation|partnerships|business development|revenue|commercial)\b/i],
+  ["Operations", /\b(operations|supply chain|logistics|manufacturing|facilities|procurement|strategy|chief of staff|business operations)\b/i],
+  ["People, Finance & Legal", /\b(recruiter|people|talent|hr|human resources|finance|accounting|legal|counsel|controller|payroll)\b/i],
+  ["Hardware & Robotics", /\b(hardware|mechanical|electrical|firmware|robotics|embedded|avionics|manufacturing engineer)\b/i],
+];
+const roleCategoryLabels = new Set(roleFamilies.map(([label]) => label).concat(["Customer & Support"]));
+const classifyRole = (title = "") => roleFamilies.find(([, pattern]) => pattern.test(title))?.[0] || "Other";
 
 function cleanDisplayText(value = "") {
   let text = String(value);
@@ -85,24 +100,30 @@ const rawJobs = JSON.parse(zlib.gunzipSync(compressed));
 const seenProviderIds = new Set();
 
 const jobs = rawJobs
-  .map((job) => ({
-    ...job,
-    source: cleanDisplayText(job.source),
-    company: cleanDisplayText(job.company),
-    companySize: cleanDisplayText(job.companySize),
-    sector: cleanDisplayText(job.sector),
-    title: cleanDisplayText(job.title),
-    category: cleanDisplayText(job.category),
-    location: cleanDisplayText(job.location),
-    type: cleanDisplayText(job.type),
-    level: cleanDisplayText(job.level),
-    salary: cleanDisplayText(job.salary),
-    url: userOpenableUrl(job),
-    summary: cleanDisplayText(job.summary),
-    companyEvidence: cleanDisplayText(job.companyEvidence || "Verified official posting with a user-openable source link."),
-    tags: Array.from(new Set((job.tags || []).map(cleanDisplayText).filter(Boolean))).slice(0, 8),
-    isUs: inferIsUs(job),
-  }))
+  .map((job) => {
+    const title = cleanDisplayText(job.title);
+    const category = classifyRole(title);
+    const sector = cleanDisplayText(job.sector);
+    const tags = Array.from(new Set([category, sector, ...(job.tags || []).map(cleanDisplayText).filter(Boolean).filter((tag) => !roleCategoryLabels.has(tag))])).slice(0, 8);
+    return {
+      ...job,
+      source: cleanDisplayText(job.source),
+      company: cleanDisplayText(job.company),
+      companySize: cleanDisplayText(job.companySize),
+      sector,
+      title,
+      category,
+      location: cleanDisplayText(job.location),
+      type: cleanDisplayText(job.type),
+      level: cleanDisplayText(job.level),
+      salary: cleanDisplayText(job.salary),
+      url: userOpenableUrl(job),
+      summary: cleanDisplayText(job.summary),
+      companyEvidence: cleanDisplayText(job.companyEvidence || "Verified official posting with a user-openable source link."),
+      tags,
+      isUs: inferIsUs(job),
+    };
+  })
   .filter((job) => job.company && job.title && job.location && /^https?:\/\//i.test(job.url))
   .filter((job) => {
     const providerKey = [job.source, job.id].filter(Boolean).join(":").toLowerCase();
