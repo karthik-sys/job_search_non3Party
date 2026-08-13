@@ -1,36 +1,37 @@
 {
-  "feedsChecked": 1236,
-  "boardsResolved": 924,
-  "companiesWithMatches": 797,
-  "jobs": 46188,
-  "usJobs": 25227,
-  "internationalJobs": 20961,
+  "feedsChecked": 1448,
+  "boardsResolved": 999,
+  "companiesWithMatches": 841,
+  "jobs": 47329,
   "sizes": {
+    "Unknown": 13278,
+    "Medium": 24427,
+    "Large": 4189,
     "Enterprise": 5336,
-    "Large": 4187,
-    "Medium": 23349,
-    "Startup": 99,
-    "Unknown": 13217
+    "Startup": 99
   },
   "sectors": {
-    "AI & Developer Tools": 1927,
-    "Automotive & Robotics": 631,
+    "Other US Companies": 21357,
+    "Gaming & Interactive": 11752,
+    "Retail & Commerce": 4799,
+    "AI & Developer Tools": 1928,
     "Climate & Infrastructure": 416,
-    "Consumer Technology": 1123,
-    "Cybersecurity": 716,
-    "Defense & Aerospace": 946,
-    "Education": 24,
     "Enterprise Software & Cloud": 1834,
+    "Cybersecurity": 716,
     "Fintech": 1445,
-    "Gaming & Interactive": 10903,
+    "Consumer Technology": 1122,
+    "Defense & Aerospace": 946,
+    "Automotive & Robotics": 631,
     "Healthcare & Biotech": 359,
-    "Other US Companies": 21083,
-    "Retail & Commerce": 4781
+    "Education": 24
   },
   "sources": {
+    "Direct BambooHR": 338,
+    "Direct Breezy": 117,
+    "Direct Greenhouse": 34409,
+    "Direct Lever": 3540,
+    "Direct SmartRecruiters": 2838,
     "Direct Ashby": 5404,
-    "Direct Greenhouse": 34407,
-    "Direct Lever": 3539,
-    "Direct SmartRecruiters": 2838
+    "Direct Recruitee": 683
   }
 }

@@ -82,6 +82,11 @@ const slugify = (value = "") => String(value)
   .replace(/[\u0300-\u036f]/g, "")
   .replace(/[^a-z0-9]+/g, "-")
   .replace(/^-+|-+$/g, "");
+const xmlText = (value = "", tag = "") => {
+  const match = String(value).match(new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)<\\/${tag}>`, "i"));
+  return clean(match?.[1] || "");
+};
+const xmlItems = (value = "", tag = "position") => [...String(value).matchAll(new RegExp(`<${tag}[^>]*>[\\\\s\\\\S]*?<\\/${tag}>`, "gi"))].map((match) => match[0]);
 const humanPostingUrl = (row, job, title) => {
   const direct = job.absolute_url || job.hostedUrl || job.jobUrl || job.applyUrl;
   if (direct && !/api\.smartrecruiters\.com/i.test(direct)) return direct;
@@ -106,6 +111,16 @@ const slugFromLink = (link, provider) => {
     if (provider === 'lever') return parts[0] || '';
     if (provider === 'ashby') return parts[0] || parts[1] || '';
     if (provider === 'smartrecruiters') return parts[1] || parts[0] || '';
+    if (provider === 'breezy') return url.hostname.replace(/\.breezy\.hr$/i, '');
+    if (provider === 'bamboohr') return url.hostname.replace(/\.bamboohr\.com$/i, '');
+    if (provider === 'recruitee') return url.hostname.replace(/\.recruitee\.com$/i, '');
+    if (provider === 'personio') return url.hostname.replace(/\.jobs\.personio\.com$/i, '');
+    if (provider === 'workday') {
+      const host = url.hostname;
+      const tenant = host.split('.')[0];
+      const siteParts = parts.filter((part) => !/^(en-US|en|jobs|job|search-results)$/i.test(part));
+      return `${host}|${tenant}|${siteParts[0] || ''}`;
+    }
   } catch {}
   return '';
 };
@@ -114,6 +129,11 @@ const providerFromLink = (link, fallback) => {
   if (/lever\.co/.test(link)) return 'lever';
   if (/ashbyhq\.com/.test(link)) return 'ashby';
   if (/smartrecruiters\.com/.test(link)) return 'smartrecruiters';
+  if (/myworkdayjobs\.com|workdayjobs\.com/.test(link)) return 'workday';
+  if (/breezy\.hr/.test(link)) return 'breezy';
+  if (/bamboohr\.com/.test(link)) return 'bamboohr';
+  if (/recruitee\.com/.test(link)) return 'recruitee';
+  if (/personio\.com/.test(link)) return 'personio';
   return fallback;
 };
 const rows = [];
@@ -121,7 +141,7 @@ const seenBoards = new Set();
 for (const company of registry) {
   for (const link of company.careersLinks || []) {
     const ats = providerFromLink(link, company.provider);
-    if (!['greenhouse','lever','ashby','smartrecruiters'].includes(ats)) continue;
+    if (!['greenhouse','lever','ashby','smartrecruiters','workday','breezy','bamboohr','recruitee','personio'].includes(ats)) continue;
     const slug = slugFromLink(link, ats);
     if (!slug) continue;
     const key = `${ats}:${slug}`;
@@ -131,28 +151,87 @@ for (const company of registry) {
   }
 }
 
+function providerLabel(ats) {
+  return ({
+    greenhouse: "Greenhouse",
+    lever: "Lever",
+    ashby: "Ashby",
+    smartrecruiters: "SmartRecruiters",
+    workday: "Workday",
+    breezy: "Breezy",
+    bamboohr: "BambooHR",
+    recruitee: "Recruitee",
+    personio: "Personio",
+  })[ats] || ats;
+}
+
+function boardRequest(row) {
+  if (row.ats === 'greenhouse') return { url: `https://boards-api.greenhouse.io/v1/boards/${row.slug}/jobs?content=true` };
+  if (row.ats === 'lever') return { url: `https://api.lever.co/v0/postings/${row.slug}?mode=json` };
+  if (row.ats === 'ashby') return { url: `https://api.ashbyhq.com/posting-api/job-board/${row.slug}?includeCompensation=true` };
+  if (row.ats === 'smartrecruiters') return { url: `https://api.smartrecruiters.com/v1/companies/${row.slug}/postings?limit=100` };
+  if (row.ats === 'breezy') return { url: `https://${row.slug}.breezy.hr/json` };
+  if (row.ats === 'bamboohr') return { url: `https://${row.slug}.bamboohr.com/careers/list` };
+  if (row.ats === 'recruitee') return { url: `https://${row.slug}.recruitee.com/api/offers/` };
+  if (row.ats === 'personio') return { url: `https://${row.slug}.jobs.personio.com/xml`, text: true };
+  if (row.ats === 'workday') {
+    const [host, tenant, site] = row.slug.split('|');
+    return {
+      url: `https://${host}/wday/cxs/${tenant}/${site}/jobs`,
+      init: { method: "POST", headers: { "content-type": "application/json", "user-agent": "Karthik private job research dashboard" }, body: JSON.stringify({ appliedFacets: {}, limit: 100, offset: 0, searchText: "" }) },
+      workday: { host, tenant, site },
+    };
+  }
+  return { url: "" };
+}
+
+function rawJobsFromData(row, data) {
+  if (row.ats === 'bamboohr') return data.result || data.jobs || [];
+  if (row.ats === 'recruitee') return data.offers || data.jobs || [];
+  if (row.ats === 'workday') return data.jobPostings || data.jobs || [];
+  return Array.isArray(data) ? data : data.jobs || data.content || [];
+}
+
+function normalizeJob(row, j) {
+  const title = j.title || j.text || j.name || j.jobOpeningName || j.position || '';
+  const locationObject = j.location || j.locations?.[0] || {};
+  const location = j.locationsText || j.locationName || locationObject.name || locationObject.city || j.city || j.categories?.location || j.location || '';
+  const content = clean(j.content || j.descriptionPlain || j.descriptionHtml || j.description || j.jobAd?.sections?.jobDescription?.text || j.lists?.map(l => `${l.text} ${l.content}`).join(' ') || '');
+  const dateValue = j.updated_at || j.publishedAt || j.created_at || j.createdAt || j.releasedDate || j.updatedDate || j.postedOn || j.date || new Date().toISOString();
+  const date = typeof dateValue === 'number' ? new Date(dateValue).toISOString() : dateValue;
+  const category = classify(title);
+  const inferredSector = inferSector(title, content, row.sector);
+  const remote = /remote/i.test(`${location} ${title}`);
+  const isUs = us.test(location) || (remote && /us|united states|us-hiring-signal|verified-seed/i.test(`${row.confidence} ${location}`));
+  const label = providerLabel(row.ats);
+  let postingUrl = humanPostingUrl(row, j, title);
+  if (row.ats === 'workday') {
+    const [host,, site] = row.slug.split('|');
+    const externalPath = String(j.externalPath || j.url || "").replace(/^\//, "");
+    postingUrl = externalPath ? `https://${host}/en-US/${site}/job/${externalPath}` : "";
+  }
+  if (row.ats === 'breezy') postingUrl = j.url || j.apply_url || `https://${row.slug}.breezy.hr/p/${j.friendly_id || j._id || slugify(title)}`;
+  if (row.ats === 'bamboohr') postingUrl = j.url || j.applyUrl || `https://${row.slug}.bamboohr.com/careers/${j.id || j.jobOpeningId || ""}`;
+  if (row.ats === 'recruitee') postingUrl = j.careers_url || j.url || `https://${row.slug}.recruitee.com/o/${j.slug || slugify(title)}`;
+  if (!ALL_MARKETS && !isUs) return null;
+  if (!title || !postingUrl || /api\./i.test(postingUrl)) return null;
+  return {id:`${row.ats}-${row.slug}-${j.id || j.uuid || j._id || j.ref || j.jobUrl || j.hostedUrl || j.externalPath || postingUrl}`,source:`Direct ${label}`,company:row.company,companySize:companySize(row.company,row.size),sector:inferredSector,title,category,location:typeof location==='string'&&location?location:(isUs?'United States / Remote':'Remote / Global'),remote,isUs,type:j.categories?.commitment || j.type?.name || j.employment_type || '',level:j.experience?.name || '',date,salary:'',tags:requirements(title,content,category,inferredSector),url:postingUrl,summary:summarize(content),companyEvidence:`Verified official posting: returned by the ${label} careers feed for ${row.slug} with a user-openable source link.`};
+}
+
 async function fetchBoard(row){
-  const url = row.ats === 'greenhouse' ? `https://boards-api.greenhouse.io/v1/boards/${row.slug}/jobs?content=true` : row.ats === 'lever' ? `https://api.lever.co/v0/postings/${row.slug}?mode=json` : row.ats === 'ashby' ? `https://api.ashbyhq.com/posting-api/job-board/${row.slug}` : `https://api.smartrecruiters.com/v1/companies/${row.slug}/postings?limit=100`;
+  const request = boardRequest(row);
   try {
-    const res = await fetch(url, {headers:{'user-agent':'Karthik private job research dashboard'}});
+    const res = await fetch(request.url, request.init || {headers:{'user-agent':'Karthik private job research dashboard'}});
     if (!res.ok) return {...row,status:res.status,jobs:[]};
+    if (request.text) {
+      const rawText = await res.text();
+      const raw = xmlItems(rawText, "position").map((item) => ({ title: xmlText(item, "name"), location: xmlText(item, "office"), description: xmlText(item, "jobDescriptions"), id: xmlText(item, "id"), url: xmlText(item, "recruitingCategory") }));
+      const jobs = raw.map((j) => normalizeJob(row, j)).filter(Boolean);
+      return {...row,status:200,total:raw.length,jobs};
+    }
     const data = await res.json();
-    const raw = Array.isArray(data) ? data : data.jobs || data.content || [];
-    const jobs = raw.flatMap(j => {
-      const title = j.title || j.text || j.name || '';
-      const location = j.location?.name || j.location || j.categories?.location || j.location?.city || '';
-      const content = clean(j.content || j.descriptionPlain || j.descriptionHtml || j.description || j.jobAd?.sections?.jobDescription?.text || j.lists?.map(l => `${l.text} ${l.content}`).join(' ') || '');
-      const dateValue = j.updated_at || j.publishedAt || j.created_at || j.createdAt || j.releasedDate || j.updatedDate || new Date().toISOString();
-      const date = typeof dateValue === 'number' ? new Date(dateValue).toISOString() : dateValue;
-      const category = classify(title);
-      const inferredSector = inferSector(title, content, row.sector);
-      const remote = /remote/i.test(`${location} ${title}`);
-      const isUs = us.test(location) || (remote && /us|united states|us-hiring-signal|verified-seed/i.test(`${row.confidence} ${location}`));
-      if (!ALL_MARKETS && !isUs) return [];
-      const providerLabel = row.ats === 'greenhouse' ? 'Greenhouse' : row.ats === 'lever' ? 'Lever' : row.ats === 'ashby' ? 'Ashby' : 'SmartRecruiters';
-      const postingUrl = humanPostingUrl(row, j, title);
-      return [{id:`${row.ats}-${row.slug}-${j.id || j.uuid || j.ref || j.jobUrl || j.hostedUrl}`,source:`Direct ${providerLabel}`,company:row.company,companySize:companySize(row.company,row.size),sector:inferredSector,title,category,location:typeof location==='string'&&location?location:(isUs?'United States / Remote':'Remote / Global'),remote,isUs,type:j.categories?.commitment || '',level:'',date,salary:'',tags:requirements(title,content,category,inferredSector),url:postingUrl,summary:summarize(content),companyEvidence:`Verified official posting: returned by the ${providerLabel} careers feed for ${row.slug} with a user-openable source link.`}];
-    });
+    const raw = rawJobsFromData(row, data);
+    const jobs = raw.map((j) => normalizeJob(row, j)).filter(Boolean);
     return {...row,status:200,total:raw.length,jobs};
   } catch (e) { return {...row,status:'error',jobs:[]}; }
 }
@@ -164,7 +243,7 @@ for(let i=0;i<rows.length;i+=24) {
 }
 const jobs=results.flatMap(r=>r.jobs).filter(j=>j.url);
 const seenProviderIds=new Set(); const unique=jobs.filter(j=>{const key=`${j.source || ''}:${j.id || ''}`.toLowerCase().trim();if(key!==':'&&seenProviderIds.has(key))return false;if(key!==':')seenProviderIds.add(key);return true;}).sort((a,b)=>new Date(b.date)-new Date(a.date));
-const summary = {feedsChecked:rows.length,boardsResolved:results.filter(r=>r.status===200).length,companiesWithMatches:new Set(unique.map(j=>j.company)).size,jobs:unique.length,sizes:Object.fromEntries([...new Set(unique.map(j=>j.companySize))].map(s=>[s,unique.filter(j=>j.companySize===s).length])),sectors:Object.fromEntries([...new Set(unique.map(j=>j.sector))].map(s=>[s,unique.filter(j=>j.sector===s).length]))};
+const summary = {feedsChecked:rows.length,boardsResolved:results.filter(r=>r.status===200).length,companiesWithMatches:new Set(unique.map(j=>j.company)).size,jobs:unique.length,sizes:Object.fromEntries([...new Set(unique.map(j=>j.companySize))].map(s=>[s,unique.filter(j=>j.companySize===s).length])),sectors:Object.fromEntries([...new Set(unique.map(j=>j.sector))].map(s=>[s,unique.filter(j=>j.sector===s).length])),sources:Object.fromEntries([...new Set(unique.map(j=>j.source))].map(s=>[s,unique.filter(j=>j.source===s).length]))};
 if (!unique.length) {
   fs.writeFileSync('app/company-coverage.failed.json',JSON.stringify(results.map(({jobs,...r})=>({...r,matchingJobs:jobs.length})),null,2));
   console.error('No jobs were fetched. Preserved existing snapshot and wrote app/company-coverage.failed.json for debugging.');
