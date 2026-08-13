@@ -1,0 +1,101 @@
+company	sector	ats	slug
+OpenAI	AI & Developer Tools	greenhouse	openai
+Anthropic	AI & Developer Tools	greenhouse	anthropic
+Scale AI	AI & Developer Tools	greenhouse	scaleai
+Weights & Biases	AI & Developer Tools	greenhouse	weightsandbiases
+Hugging Face	AI & Developer Tools	greenhouse	huggingface
+Databricks	AI & Developer Tools	greenhouse	databricks
+Cohere	AI & Developer Tools	greenhouse	cohere
+Perplexity	AI & Developer Tools	ashby	perplexity
+Together AI	AI & Developer Tools	greenhouse	togetherai
+Anyscale	AI & Developer Tools	greenhouse	anyscale
+LangChain	AI & Developer Tools	ashby	langchain
+Modal	AI & Developer Tools	ashby	modal
+Replicate	AI & Developer Tools	greenhouse	replicate
+Vercel	AI & Developer Tools	greenhouse	vercel
+Supabase	AI & Developer Tools	ashby	supabase
+GitLab	AI & Developer Tools	greenhouse	gitlab
+HashiCorp	AI & Developer Tools	greenhouse	hashicorp
+MongoDB	Enterprise Software & Cloud	greenhouse	mongodb
+Cloudflare	Enterprise Software & Cloud	greenhouse	cloudflare
+Snowflake	Enterprise Software & Cloud	greenhouse	snowflake
+Datadog	Enterprise Software & Cloud	greenhouse	datadog
+Confluent	Enterprise Software & Cloud	greenhouse	confluent
+Twilio	Enterprise Software & Cloud	greenhouse	twilio
+Asana	Enterprise Software & Cloud	greenhouse	asana
+Notion	Enterprise Software & Cloud	greenhouse	notion
+Airtable	Enterprise Software & Cloud	greenhouse	airtable
+Figma	Enterprise Software & Cloud	greenhouse	figma
+Rippling	Enterprise Software & Cloud	greenhouse	rippling
+Gusto	Enterprise Software & Cloud	greenhouse	gusto
+Plaid	Fintech	greenhouse	plaid
+Affirm	Fintech	greenhouse	affirm
+Coinbase	Fintech	greenhouse	coinbase
+Robinhood	Fintech	greenhouse	robinhood
+Brex	Fintech	greenhouse	brex
+Ramp	Fintech	ashby	ramp
+Chime	Fintech	greenhouse	chime
+SoFi	Fintech	greenhouse	sofi
+Mercury	Fintech	ashby	mercury
+Highmark Health	Healthcare & Biotech	greenhouse	highmarkhealth
+Oscar Health	Healthcare & Biotech	greenhouse	oscar
+Ro	Healthcare & Biotech	greenhouse	ro
+Zocdoc	Healthcare & Biotech	greenhouse	zocdoc
+Tempus	Healthcare & Biotech	greenhouse	tempus
+Recursion	Healthcare & Biotech	greenhouse	recursionpharmaceuticals
+Benchling	Healthcare & Biotech	greenhouse	benchling
+Flatiron Health	Healthcare & Biotech	greenhouse	flatironhealth
+Anduril	Defense & Aerospace	greenhouse	andurilindustries
+Palantir	Defense & Aerospace	greenhouse	palantir
+Shield AI	Defense & Aerospace	greenhouse	shieldai
+Saronic	Defense & Aerospace	greenhouse	saronic
+Varda Space	Defense & Aerospace	greenhouse	vardaspace
+Astranis	Defense & Aerospace	greenhouse	astranis
+Rocket Lab	Defense & Aerospace	greenhouse	rocketlab
+Relativity Space	Defense & Aerospace	greenhouse	relativity
+Skydio	Defense & Aerospace	greenhouse	skydio
+Waymo	Automotive & Robotics	greenhouse	waymo
+Zoox	Automotive & Robotics	greenhouse	zoox
+Nuro	Automotive & Robotics	greenhouse	nuro
+Aurora	Automotive & Robotics	greenhouse	aurora
+Motional	Automotive & Robotics	greenhouse	motional
+Agility Robotics	Automotive & Robotics	greenhouse	agilityrobotics
+Zipline	Automotive & Robotics	greenhouse	flyzipline
+Cruise	Automotive & Robotics	greenhouse	cruise
+Reddit	Consumer Technology	greenhouse	reddit
+Discord	Consumer Technology	greenhouse	discord
+Pinterest	Consumer Technology	greenhouse	pinterest
+Snap	Consumer Technology	greenhouse	snap
+DoorDash	Consumer Technology	greenhouse	doordashusa
+Instacart	Consumer Technology	greenhouse	instacart
+Duolingo	Consumer Technology	greenhouse	duolingo
+Roblox	Consumer Technology	greenhouse	roblox
+Roku	Consumer Technology	greenhouse	roku
+Twitch	Consumer Technology	greenhouse	twitch
+Samsara	Climate & Infrastructure	greenhouse	samsara
+Form Energy	Climate & Infrastructure	greenhouse	formenergy
+Redwood Materials	Climate & Infrastructure	greenhouse	redwoodmaterials
+Commonwealth Fusion Systems	Climate & Infrastructure	greenhouse	cfsenergy
+Fervo Energy	Climate & Infrastructure	greenhouse	fervoenergy
+Watershed	Climate & Infrastructure	greenhouse	watershed
+Crusoe	Climate & Infrastructure	greenhouse	crusoe
+Charm Industrial	Climate & Infrastructure	greenhouse	charmindustrial
+Carbon Direct	Climate & Infrastructure	greenhouse	carbon-direct
+CrowdStrike	Cybersecurity	greenhouse	crowdstrike
+Wiz	Cybersecurity	greenhouse	wizinc
+Snyk	Cybersecurity	greenhouse	snyk
+Abnormal Security	Cybersecurity	greenhouse	abnormalsecurity
+Chainguard	Cybersecurity	greenhouse	chainguard
+Huntress	Cybersecurity	greenhouse	huntress
+Vanta	Cybersecurity	greenhouse	vanta
+Drata	Cybersecurity	greenhouse	drata
+Arctic Wolf	Cybersecurity	greenhouse	arcticwolf
+Rubrik	Cybersecurity	greenhouse	rubrik
+Cloudflare	Cybersecurity	greenhouse	cloudflare
+Block	Fintech	greenhouse	block
+Stripe	Fintech	greenhouse	stripe
+Lyft	Consumer Technology	greenhouse	lyft
+Dropbox	Enterprise Software & Cloud	greenhouse	dropbox
+Okta	Cybersecurity	greenhouse	okta
+SentinelOne	Cybersecurity	greenhouse	sentinelone
+Five9	Enterprise Software & Cloud	greenhouse	five9
