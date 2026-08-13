@@ -313,14 +313,18 @@ export default function Home() {
       return (!q || haystack.includes(q)) && (sector === "All sectors" || company.sector === sector) && (size === "All sizes" || company.size === size);
     });
   }, [query, sector, size]);
-  const nebulaSectors = useMemo(() => Array.from(new Set(jobs.map((job) => job.sector))).map((sectorName, sectorIndex) => {
-    const sectorJobs = jobs.filter((job) => job.sector === sectorName);
+  const nebulaSectors = useMemo(() => sectors.filter((name) => name !== "All sectors").map((sectorName, sectorIndex) => {
+    const sectorNeedle = sectorName.toLowerCase();
+    const sectorJobs = jobs.filter((job) => {
+      const postingSignals = [job.sector, job.category, ...job.tags].map((signal) => signal.toLowerCase());
+      return postingSignals.includes(sectorNeedle);
+    });
     const companies = Array.from(new Set(sectorJobs.map((job) => job.company))).map((company) => {
       const companyJobs = sectorJobs.filter((job) => job.company === company);
       return { company, count: companyJobs.length, size: companyJobs[0].companySize, tags: contributionTags(companyJobs, 4), roles: Array.from(new Set(companyJobs.map((job) => job.category))).slice(0, 4) };
-    }).sort((a, b) => b.count - a.count).slice(0, 56);
+    }).sort((a, b) => b.count - a.count);
     return { sector: sectorName, count: sectorJobs.length, companies, tags: contributionTags(sectorJobs, 6), index: sectorIndex };
-  }).sort((a, b) => b.count - a.count), [jobs]);
+  }).filter((cluster) => cluster.count > 0).sort((a, b) => b.count - a.count), [jobs, sectors]);
   const selectedNebulaCluster = nebulaSectors.find((cluster) => cluster.sector === selectedNebulaSector) ?? nebulaSectors[0];
   const selectedNebulaCompanyNode = selectedNebulaCluster?.companies.find((company) => company.company === selectedNebulaCompany) ?? selectedNebulaCluster?.companies[0];
   const visibleNebulaCompanies = selectedNebulaCluster?.companies.slice(0, 50) ?? [];
@@ -434,9 +438,10 @@ export default function Home() {
             {nebulaClarity !== "markets" && visibleNebulaCompanies.map((company, i) => <button key={company.company} className={`marketCompanyNode ${selectedNebulaCompanyNode?.company === company.company ? "active" : ""}`} style={{ "--angle": `${(i * 137.5) % 360}deg`, "--radius": `${118 + (i % 3) * 52 + Math.floor(i / 12) * 28}px`, "--mass": Math.min(1.75, 0.72 + company.count / Math.max(1, visibleNebulaCompanies[0]?.count || 1) * 0.9) } as CSSProperties} onClick={() => setSelectedNebulaCompany(company.company)} title={`${company.company}: ${company.tags.join(" · ")}`}><strong>{company.company.slice(0, 2)}</strong><span>{company.company}</span><em>{company.count}</em></button>)}
           </div></div>
           <aside className="marketInspector">
-            <p className="eyebrow">SELECTED MARKET</p><h3>{selectedNebulaCluster?.sector ?? "US job market"}</h3><p>{selectedNebulaCluster ? `${selectedNebulaCluster.count.toLocaleString()} roles across ${selectedNebulaCluster.companies.length} resolved hiring companies. Showing up to the top 50 company nodes for this sector. Tags are inferred from official postings, not third-party summaries.` : "Choose an industry node to inspect company contribution signals."}</p>
+            <p className="eyebrow">SELECTED MARKET</p><h3>{selectedNebulaCluster?.sector ?? "US job market"}</h3><p>{selectedNebulaCluster ? `${selectedNebulaCluster.count.toLocaleString()} official-posting contributions across ${selectedNebulaCluster.companies.length} hiring companies. Showing up to the top 50 company nodes for this market. Companies can appear in multiple markets when their own postings carry those signals.` : "Choose an industry node to inspect company contribution signals."}</p>
             {selectedNebulaCluster && <div className="marketTags">{selectedNebulaCluster.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>}
             {selectedNebulaCompanyNode && <div className="companyLens"><span>Company lens</span><h4>{selectedNebulaCompanyNode.company}</h4><b>{selectedNebulaCompanyNode.count} open roles</b><div>{selectedNebulaCompanyNode.tags.map((tag) => <em key={tag}>{tag}</em>)}</div><button onClick={() => { setQuery(selectedNebulaCompanyNode.company); setSector("All sectors"); setView("companies"); setShowNebula(false); }}>Open company results →</button></div>}
+            {visibleNebulaCompanies.length > 0 && <div className="marketTopCompanies"><b>Top companies in this market</b>{visibleNebulaCompanies.map((company, index) => <button key={company.company} className={selectedNebulaCompanyNode?.company === company.company ? "active" : ""} onClick={() => setSelectedNebulaCompany(company.company)}><span>{index + 1}. {company.company}</span><em>{company.tags.slice(0, 3).join(" · ")}</em><strong>{company.count}</strong></button>)}</div>}
             {nebulaInteractions.length > 0 && <div className="marketInteractions"><b>How nodes interact</b>{nebulaInteractions.map(({ company, sharedTags, sharedRoles }) => <button key={company.company} onClick={() => setSelectedNebulaCompany(company.company)}><span>{company.company}</span><em>{[...sharedTags, ...sharedRoles].slice(0, 4).join(" · ")}</em><strong>{company.count} roles</strong></button>)}<small>Interaction here means shared official-posting tags or role families inside the selected sector.</small></div>}
             <div className="marketList"><b>Industries</b>{nebulaSectors.map((cluster) => <button key={cluster.sector} className={selectedNebulaCluster?.sector === cluster.sector ? "active" : ""} onClick={() => { setSelectedNebulaSector(cluster.sector); setSelectedNebulaCompany(null); setNebulaClarity("selection"); }}><span>{cluster.sector}</span><em>{cluster.companies.length} companies · {cluster.count.toLocaleString()} roles</em></button>)}</div>
           </aside>

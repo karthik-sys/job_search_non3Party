@@ -56,7 +56,9 @@ test("keeps public docs and source aligned with the product", async () => {
   assert.match(page, /gmailMode === "all"/);
   assert.match(page, /Matched to applied/);
   assert.match(page, /contributionTags/);
-  assert.match(page, /slice\(0, 56\)/);
+  assert.match(page, /slice\(0, 50\)/);
+  assert.match(page, /Top companies in this market/);
+  assert.match(page, /Companies can appear in multiple markets/);
   assert.match(preferences, /Customer Success & Support/);
   assert.match(preferences, /Finance, People & Legal/);
   assert.match(layout, /Direct Company US Jobs/);
